@@ -25,17 +25,24 @@ namespace l1t {
     virtual ~Stage2Layer2EtSumAlgorithmFirmwareImp1();
     virtual void processEvent(const std::vector<l1t::CaloTower> & towers,
 			      std::vector<l1t::EtSum> & sums);
+    virtual void resetEnergySums();
+
   private:
     CaloParamsHelper* params_;
-    int32_t towEtMetThresh_;
-    int32_t towEtSumEtThresh_;
-    int32_t towEtEcalSumThresh_;
-    int32_t metEtaMax_;
-    int32_t metEtaMaxHF_;
-    int32_t ettEtaMax_;
-    int32_t ettEtaMaxHF_;
-    int32_t nTowThresholdHw_;
-    int32_t nTowEtaMax_;	
+    int towEtMetThresh_;
+    int towEtSumEtThresh_;
+    int towEtEcalSumThresh_;
+    int metEtaMax_;
+    int metEtaMaxHF_;
+    int ettEtaMax_;
+    int ettEtaMaxHF_;
+    int nTowThresholdHw_;
+    int nTowEtaMax_;
+    int ex_, ey_, et_;	
+    int exHF_, eyHF_, etHF_;
+    int etem_;		
+    unsigned int mb0_, mb1_;	
+    unsigned int ntowers_;		
   };
 }
 

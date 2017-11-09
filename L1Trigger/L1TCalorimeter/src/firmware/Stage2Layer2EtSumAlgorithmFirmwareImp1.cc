@@ -32,8 +32,8 @@ l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::~Stage2Layer2EtSumAlgorithmFirmware
 void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector<l1t::CaloTower> & towers,
                                                                std::vector<l1t::EtSum> & etsums) {
 
-  unsigned int ntowers(0);
   math::XYZTLorentzVector p4;
+  ntowers_ = 0;
   
   int nTT4 = CaloTools::calNrTowers(-1*params_->egPUSParam(1),
 				    params_->egPUSParam(1),
@@ -44,11 +44,10 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
   // etaSide=1 is positive eta, etaSide=-1 is negative eta
   for (int etaSide=1; etaSide>=-1; etaSide-=2) {
 
-    int ex(0), ey(0), et(0);
-    int exHF(0), eyHF(0), etHF(0);
-    int etem(0);
-    unsigned int mb0(0), mb1(0);
-
+    //reset all energy sums to zero
+    resetEnergySums();
+    
+    //saturation flags
     bool ettSat(0), ettHFSat(0), ecalEtSat(0), metSat(0), metHFSat(0);
 
     for (unsigned absieta=1; absieta<=(unsigned int)CaloTools::mpEta(CaloTools::kHFEnd); absieta++) {
@@ -158,48 +157,48 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
 	  ringNtowers += 1;
       }    
       
-      ex += ringEx;
-      ey += ringEy;
-      et += ringEt;
-      etHF += ringEtHF;
-      exHF += ringExHF;
-      eyHF += ringEyHF;
+      ex_ += ringEx;
+      ey_ += ringEy;
+      et_ += ringEt;
+      etHF_ += ringEtHF;
+      exHF_ += ringExHF;
+      eyHF_ += ringEyHF;
 
-      etem  += ringEtEm;
+      etem_  += ringEtEm;
 
-      mb0 += ringMB0;
-      mb1 += ringMB1;
+      mb0_ += ringMB0;
+      mb1_ += ringMB1;
 
-      ntowers += ringNtowers;
+      ntowers_ += ringNtowers;
     }
 
-    if (mb0>0xf) mb0 = 0xf;
-    if (mb1>0xf) mb1 = 0xf;
+    if (mb0_>0xf) mb0_ = 0xf;
+    if (mb1_>0xf) mb1_ = 0xf;
 
 
     // saturate energy sums if saturated TP/tower
 
-    if(ecalEtSat) etem = 0xffff;
-    if(ettSat) et = 0xffff;
-    if(ettHFSat) etHF = 0xffff;
+    if(ecalEtSat) etem_ = 0xffff;
+    if(ettSat) et_ = 0xffff;
+    if(ettHFSat) etHF_ = 0xffff;
     if(metSat){ 
-      ex = 0x7fffffff;
-      ey = 0x7fffffff;
+      ex_ = 0x7fffffff;
+      ey_ = 0x7fffffff;
     }
     if(metHFSat){
-      exHF = 0x7fffffff;
-      eyHF = 0x7fffffff;
+      exHF_ = 0x7fffffff;
+      eyHF_ = 0x7fffffff;
     }
     
-    l1t::EtSum etSumTotalEt(p4,l1t::EtSum::EtSumType::kTotalEt,et,0,0,0);
-    l1t::EtSum etSumEx(p4,l1t::EtSum::EtSumType::kTotalEtx,ex,0,0,0);
-    l1t::EtSum etSumEy(p4,l1t::EtSum::EtSumType::kTotalEty,ey,0,0,0);
+    l1t::EtSum etSumTotalEt(p4,l1t::EtSum::EtSumType::kTotalEt,et_,0,0,0);
+    l1t::EtSum etSumEx(p4,l1t::EtSum::EtSumType::kTotalEtx,ex_,0,0,0);
+    l1t::EtSum etSumEy(p4,l1t::EtSum::EtSumType::kTotalEty,ey_,0,0,0);
 
-    l1t::EtSum etSumTotalEtHF(p4,l1t::EtSum::EtSumType::kTotalEtHF,etHF,0,0,0);
-    l1t::EtSum etSumExHF(p4,l1t::EtSum::EtSumType::kTotalEtxHF,exHF,0,0,0);
-    l1t::EtSum etSumEyHF(p4,l1t::EtSum::EtSumType::kTotalEtyHF,eyHF,0,0,0);
+    l1t::EtSum etSumTotalEtHF(p4,l1t::EtSum::EtSumType::kTotalEtHF,etHF_,0,0,0);
+    l1t::EtSum etSumExHF(p4,l1t::EtSum::EtSumType::kTotalEtxHF,exHF_,0,0,0);
+    l1t::EtSum etSumEyHF(p4,l1t::EtSum::EtSumType::kTotalEtyHF,eyHF_,0,0,0);
 
-    l1t::EtSum etSumTotalEtEm(p4,l1t::EtSum::EtSumType::kTotalEtEm,etem,0,0,0);
+    l1t::EtSum etSumTotalEtEm(p4,l1t::EtSum::EtSumType::kTotalEtEm,etem_,0,0,0);
 
     l1t::EtSum::EtSumType type0 = l1t::EtSum::EtSumType::kMinBiasHFP0;
     l1t::EtSum::EtSumType type1 = l1t::EtSum::EtSumType::kMinBiasHFP1;
@@ -207,8 +206,8 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
       type0 = l1t::EtSum::EtSumType::kMinBiasHFM0;
       type1 = l1t::EtSum::EtSumType::kMinBiasHFM1;
     } 
-    l1t::EtSum etSumMinBias0(p4,type0,mb0,0,0,0);
-    l1t::EtSum etSumMinBias1(p4,type1,mb1,0,0,0);
+    l1t::EtSum etSumMinBias0(p4,type0,mb0_,0,0,0);
+    l1t::EtSum etSumMinBias1(p4,type1,mb1_,0,0,0);
 
     etsums.push_back(etSumTotalEt);
     etsums.push_back(etSumEx);
@@ -226,7 +225,24 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
   }
 
   //tower count is in aux: only on eta- side!!
-  l1t::EtSum etSumNtowers(p4,l1t::EtSum::EtSumType::kTowerCount,ntowers,0,0,0);
+  l1t::EtSum etSumNtowers(p4,l1t::EtSum::EtSumType::kTowerCount,ntowers_,0,0,0);
   etsums.push_back(etSumNtowers);
 
 }
+
+
+void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::resetEnergySums()
+{
+  
+  ex_ = 0;
+  ey_ = 0;
+  et_ = 0;
+  exHF_ = 0;
+  eyHF_ = 0; 
+  etHF_ = 0;
+  etem_ = 0;
+  mb0_ = 0;
+  mb1_ = 0;
+  
+}
+

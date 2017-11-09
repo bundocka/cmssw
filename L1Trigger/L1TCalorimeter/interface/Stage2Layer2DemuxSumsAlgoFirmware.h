@@ -26,11 +26,45 @@ namespace l1t {
     virtual ~Stage2Layer2DemuxSumsAlgoFirmwareImp1();
     virtual void processEvent(const std::vector<l1t::EtSum> & inputSums,
 			      std::vector<l1t::EtSum> & outputSums);
+    
+    virtual void calibrateEnergySums();
+    virtual void resetEnergySums();
+    
   private:
 
     CaloParamsHelper* params_;
 
     Cordic cordic_;
+
+    unsigned int et_;             			     
+    unsigned int etHF_;	    			     
+    unsigned int etem_;	    			     
+    int  metx_;	    			     
+    int  mety_;	    			     
+    int  metxHF_;	    			     
+    int  metyHF_;	    			     
+    unsigned int met_;	    			     
+    unsigned int metHF_;	    			     
+    unsigned int calibMet_;	    			     
+    unsigned int calibMetHF_;   			     
+    unsigned int ht_;	    			     
+    unsigned int mht_;	    			     
+    int  mhtx_;	    			     
+    int  mhty_;	    			     
+    int  mhtxHF_;	    			     
+    int  mhtyHF_;	    			     
+    unsigned int mhtHF_;	    			     
+    int metPhi_;	    			     
+    int metPhiHF_;	    			     
+    int calibMetPhi_;   			     
+    int calibMetHFPhi_; 			     
+    int mhtPhi_;	    			     
+    int mhtPhiHF_;	    			     
+    unsigned int mbp0_;	     
+    unsigned int mbm0_;	     
+    unsigned int mbp1_;	     
+    unsigned int mbm1_;	     
+    unsigned int ntow_;
 
   };
 

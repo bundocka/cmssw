@@ -254,8 +254,10 @@ L1TCaloParamsESProducer::L1TCaloParamsESProducer(const edm::ParameterSet& conf)
   m_params_helper.setEtSumMetPUSType(conf.getParameter<std::string>("etSumMetPUSType"));
   m_params_helper.setEtSumEttPUSType(conf.getParameter<std::string>("etSumEttPUSType"));
   m_params_helper.setEtSumEcalSumPUSType(conf.getParameter<std::string>("etSumEcalSumPUSType"));
-  m_params_helper.setEtSumXCalibrationType(conf.getParameter<std::string>("etSumXCalibrationType"));
-  m_params_helper.setEtSumYCalibrationType(conf.getParameter<std::string>("etSumYCalibrationType"));
+  m_params_helper.setEtSumCalibrationType(conf.getParameter<std::string>("etSumCalibrationType"));
+  m_params_helper.setEtSumHFCalibrationType(conf.getParameter<std::string>("etSumHFCalibrationType"));
+  m_params_helper.setEtSumPhiCalibrationType(conf.getParameter<std::string>("etSumPhiCalibrationType"));
+  m_params_helper.setEtSumHFPhiCalibrationType(conf.getParameter<std::string>("etSumHFPhiCalibrationType")); 
   m_params_helper.setEtSumEttCalibrationType(conf.getParameter<std::string>("etSumEttCalibrationType"));
   m_params_helper.setEtSumEcalSumCalibrationType(conf.getParameter<std::string>("etSumEcalSumCalibrationType"));
 
@@ -285,15 +287,30 @@ L1TCaloParamsESProducer::L1TCaloParamsESProducer(const edm::ParameterSet& conf)
   std::shared_ptr<LUT> etSumEcalSumPUSLUT( new LUT(etSumEcalSumPUSLUTStream) );
   m_params_helper.setEtSumEcalSumPUSLUT(*etSumEcalSumPUSLUT);
   
-  edm::FileInPath etSumXCalibrationLUTFile = conf.getParameter<edm::FileInPath>("etSumXCalibrationLUTFile");
-  std::ifstream etSumXCalibrationLUTStream(etSumXCalibrationLUTFile.fullPath());
-  std::shared_ptr<LUT> etSumXCalibrationLUT( new LUT(etSumXCalibrationLUTStream) );
-  m_params_helper.setEtSumXCalibrationLUT(*etSumXCalibrationLUT);
+  edm::FileInPath etSumCompressionLUTFile = conf.getParameter<edm::FileInPath>("etSumCompressionLUTFile");
+  std::ifstream etSumCompressionLUTStream(etSumCompressionLUTFile.fullPath());
+  std::shared_ptr<LUT> etSumCompressionLUT( new LUT(etSumCompressionLUTStream) );
+  m_params_helper.setEtSumCompressionLUT(*etSumCompressionLUT);
+
+  edm::FileInPath etSumCalibrationLUTFile = conf.getParameter<edm::FileInPath>("etSumCalibrationLUTFile");
+  std::ifstream etSumCalibrationLUTStream(etSumCalibrationLUTFile.fullPath());
+  std::shared_ptr<LUT> etSumCalibrationLUT( new LUT(etSumCalibrationLUTStream) );
+  m_params_helper.setEtSumCalibrationLUT(*etSumCalibrationLUT);
+
+  edm::FileInPath etSumHFCalibrationLUTFile = conf.getParameter<edm::FileInPath>("etSumHFCalibrationLUTFile");
+  std::ifstream etSumHFCalibrationLUTStream(etSumHFCalibrationLUTFile.fullPath());
+  std::shared_ptr<LUT> etSumHFCalibrationLUT( new LUT(etSumHFCalibrationLUTStream) );
+  m_params_helper.setEtSumHFCalibrationLUT(*etSumHFCalibrationLUT);
+
+  edm::FileInPath etSumPhiCalibrationLUTFile = conf.getParameter<edm::FileInPath>("etSumPhiCalibrationLUTFile");
+  std::ifstream etSumPhiCalibrationLUTStream(etSumPhiCalibrationLUTFile.fullPath());
+  std::shared_ptr<LUT> etSumPhiCalibrationLUT( new LUT(etSumPhiCalibrationLUTStream) );
+  m_params_helper.setEtSumPhiCalibrationLUT(*etSumPhiCalibrationLUT);
   
-  edm::FileInPath etSumYCalibrationLUTFile = conf.getParameter<edm::FileInPath>("etSumYCalibrationLUTFile");
-  std::ifstream etSumYCalibrationLUTStream(etSumYCalibrationLUTFile.fullPath());
-  std::shared_ptr<LUT> etSumYCalibrationLUT( new LUT(etSumYCalibrationLUTStream) );
-  m_params_helper.setEtSumYCalibrationLUT(*etSumYCalibrationLUT);
+  edm::FileInPath etSumHFPhiCalibrationLUTFile = conf.getParameter<edm::FileInPath>("etSumHFPhiCalibrationLUTFile");
+  std::ifstream etSumHFPhiCalibrationLUTStream(etSumHFPhiCalibrationLUTFile.fullPath());
+  std::shared_ptr<LUT> etSumHFPhiCalibrationLUT( new LUT(etSumHFPhiCalibrationLUTStream) );
+  m_params_helper.setEtSumHFPhiCalibrationLUT(*etSumHFPhiCalibrationLUT);
 
   edm::FileInPath etSumEttCalibrationLUTFile = conf.getParameter<edm::FileInPath>("etSumEttCalibrationLUTFile");
   std::ifstream etSumEttCalibrationLUTStream(etSumEttCalibrationLUTFile.fullPath());
