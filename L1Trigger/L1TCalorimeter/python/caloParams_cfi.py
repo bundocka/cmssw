@@ -128,6 +128,16 @@ caloParams = cms.ESProducer(
     etSumEttCalibrationLUTFile       = cms.FileInPath("L1Trigger/L1TCalorimeter/data/lut_etSumPUS_dummy.txt"),
     etSumEcalSumCalibrationLUTFile   = cms.FileInPath("L1Trigger/L1TCalorimeter/data/lut_etSumPUS_dummy.txt"),
 
+    caloStage2Params.etSumCalibrationType    = cms.string("None"),
+    caloStage2Params.etSumHFCalibrationType    = cms.string("None"),
+    caloStage2Params.etSumPhiCalibrationType    = cms.string("None"),
+    caloStage2Params.etSumHFPhiCalibrationType    = cms.string("None"),
+    caloStage2Params.etSumCompressionLUTFile         = cms.FileInPath("L1Trigger/L1TCalorimeter/data/lut_etSumPUS_dummy.txt")
+    caloStage2Params.etSumCalibrationLUTFile         = cms.FileInPath("L1Trigger/L1TCalorimeter/data/lut_etSumPUS_dummy.txt")
+    caloStage2Params.etSumHFCalibrationLUTFile         = cms.FileInPath("L1Trigger/L1TCalorimeter/data/lut_etSumPUS_dummy.txt")
+    caloStage2Params.etSumPhiCalibrationLUTFile         = cms.FileInPath("L1Trigger/L1TCalorimeter/data/lut_etSumPUS_dummy.txt")
+    caloStage2Params.etSumHFPhiCalibrationLUTFile         = cms.FileInPath("L1Trigger/L1TCalorimeter/data/lut_etSumPUS_dummy.txt")
+  
 
     # HI
     centralityNodeVersion = cms.int32(1),
