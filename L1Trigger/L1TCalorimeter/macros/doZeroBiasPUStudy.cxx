@@ -161,7 +161,7 @@ void doZeroBiasPUStudy(bool doTow){
   nentries = treeL1Towemu->GetEntries();
 
   // Number of events to run over
-  int nEvents = 2000000;//nentries; // lol
+  int nEvents = nentries; // lol
 
   for (Long64_t jentry=0; jentry<nEvents; jentry++){
   
@@ -215,13 +215,13 @@ void doZeroBiasPUStudy(bool doTow){
       }
     }
 
-
-
+    
+    
     if(!doTow){ 
       for(uint eta=0;eta<41;eta++){
 	hTowEtPU[nVtxBin][eta]->Fill(0.,(144-towOcc[eta]));
       }
-    }
+    
     
       
       // //fill ECAL TP histos
@@ -468,10 +468,10 @@ void doZeroBiasPUStudy(bool doTow){
       "# the header is first valid line starting with #<header> versionStr nrBitsAddress nrBitsData </header>\n" \
       "#<header> v1 11 9 </header>\n"; 
 
-    one << intro.rdbuf();
-    three << intro.rdbuf();
-    five << intro.rdbuf();
-    ten << intro.rdbuf();
+    one.write(intro.str().c_str(), intro.str().length() );
+    three.write(intro.str().c_str(), intro.str().length() ); 
+    five.write(intro.str().c_str(), intro.str().length() );
+    ten.write(intro.str().c_str(), intro.str().length() );
 
     int addr = 0;
 
