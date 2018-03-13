@@ -14,6 +14,123 @@
 #include "L1Trigger/L1TNtuples/interface/L1AnalysisCaloTPDataFormat.h"
 #include "L1Trigger/L1TNtuples/interface/L1AnalysisL1CaloTowerDataFormat.h"
 
+
+void makeLUT(string filename, int puBins){
+
+  //check file doesn't exist
+  TFile* file = TFile::Open(filename.c_str());
+  if (file==0){
+    cout << "TERMINATE: input file does not exist: " << filename << endl;
+    return;
+  }
+
+  vector<vector<TH1D*> > hTowEtPU(puBins, vector<TH1D*> (41));
+
+  for(uint pu=0;pu<puBins;pu++){
+    for(uint eta=0; eta<41; ++eta){
+      stringstream tempPUEt;
+      tempPUEt  << "hTowEt_"     << pu << "_" << eta+1;
+      hTowEtPU[pu][eta] = (TH1D*)file->Get(tempPUEt.str().c_str());
+    }
+  }  
+
+  ofstream one;
+  ofstream three;
+  ofstream five;
+  ofstream ten;
+
+  one.open ("one.txt");
+  three.open ("three.txt");
+  five.open ("five.txt");
+  ten.open ("ten.txt");
+    
+  stringstream intro;
+  intro << "# address to et sum tower Et threshold LUT\n" \
+    "# maps 11 bits to 9 bits\n" \
+    "# 11 bits = (compressedPileupEstimate << 6) | abs(ieta)\n" \
+    "# compressedPileupEstimate is unsigned 5 bits, abs(ieta) is unsigned 6 bits\n" \
+    "# data: tower energy threshold returned has 9 bits \n" \
+    "# anything after # is ignored with the exception of the header\n" \
+    "# the header is first valid line starting with #<header> versionStr nrBitsAddress nrBitsData </header>\n" \
+    "#<header> v1 11 9 </header>\n"; 
+
+  one.write(intro.str().c_str(), intro.str().length() );
+  three.write(intro.str().c_str(), intro.str().length() ); 
+  five.write(intro.str().c_str(), intro.str().length() );
+  ten.write(intro.str().c_str(), intro.str().length() );
+
+  int addr = 0;
+
+  for(uint pu=0;pu<puBins;pu++){
+    for(int eta=-1; eta<64; ++eta){	
+	
+      if(eta==28) continue;
+
+      if(eta==-1){
+	one   << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
+	three << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
+	five  << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
+	ten   << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
+	++addr;
+	continue;
+      }
+	
+      if(eta>40){
+	one   << addr  << " 0\t# dummy\n";
+	three << addr  << " 0\t# dummy\n";
+	five  << addr  << " 0\t# dummy\n";
+	ten   << addr  << " 0\t# dummy\n";
+	++addr;  
+	continue;
+      }
+	
+      double pass = 0;
+      double d1(999.),d3(999.),d5(999.),d10(999.);
+      double t1(999.),t3(999.),t5(999.),t10(999.);      
+
+      for(uint t=0; t<hTowEtPU[pu][eta]->GetNbinsX(); t++){
+	if(hTowEtPU[pu][eta]->Integral(0,512)==0){
+	  t1=t3=t5=t10=0;
+	  break;
+	}
+	pass = hTowEtPU[pu][eta]->Integral(t,512)/hTowEtPU[pu][eta]->Integral(0,512);
+	if( abs(pass-0.01) < d1  ){
+	  t1  = t;
+	  d1 = pass - 0.01;
+	}
+	if( abs(pass-0.03) < d3  ){
+	  t3  = t;
+	  d3 = pass - 0.03;
+	}
+	if( abs(pass-0.05) < d5  ){
+	  t5  = t;
+	  d5 = pass - 0.05;
+	}
+	if( abs(pass-0.1) < d10  ){
+	  t10  = t;
+	  d10 = pass - 0.1;
+	}
+      }
+	
+      one   << addr  << " " << t1  << "\t# ieta = " << eta+1 << "\n";
+      three << addr  << " " << t3  << "\t# ieta = " << eta+1 << "\n";
+      five  << addr  << " " << t5  << "\t# ieta = " << eta+1 << "\n";
+      ten   << addr  << " " << t10 << "\t# ieta = " << eta+1 << "\n";
+	  
+      ++addr;
+
+      //cout << std::fixed << setprecision(1) << "PU = " << pu << "\t eta = " << eta+1 << "\t 1% = " << t1/2 << "\t 3% = " << t3/2 << "\t 5% = " << t5/2 << "\t 10% = " << t10/2 << endl;
+    }   
+  }
+
+  one.close();
+  three.close();
+  five.close();
+  ten.close();
+
+}
+
+
 // 1d formatter
 void formatPlot1D(TH1D* plot1d, int colour){
 
@@ -38,22 +155,27 @@ void formatPlot2D(TH2D* plot2d){
 
 
 //main plotting function
-void doZeroBiasPUStudy(bool doTow){
+void doZeroBiasPUStudy(bool doTow, bool doLUT){
+
+  //output filename
+  string outFilename = "zbPUStudy.root";
 
   vector<int> puBinBs = {0,5,7,10,12,14,16,18,21,23,26,29,32,34,36,38,
 			 40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,999};
  
   int puBins = puBinBs.size()-1;
 
+  if(doLUT){
+    makeLUT(outFilename, puBins);
+    return;
+  }  
+
   //input ntuple
   string  inputFile01 = "root://eoscms.cern.ch//eos/cms/store/group/dpg_trigger/comm_trigger/L1Trigger/bundocka/ZeroBias/zbLUT/180305_142059/0000/L1Ntuple_*.root";
-
-  //output filename
-  string outFilename = "zbPUStudy.root";
   
   //check file doesn't exist
-  TFile* kk = TFile::Open( outFilename.c_str() );
-  if (kk!=0){
+  TFile* fileCheck = TFile::Open( outFilename.c_str() );
+  if (fileCheck!=0){
     cout << "TERMINATE: not going to overwrite file " << outFilename << endl;
     return;
   }
@@ -161,7 +283,7 @@ void doZeroBiasPUStudy(bool doTow){
   nentries = treeL1Towemu->GetEntries();
 
   // Number of events to run over
-  int nEvents = nentries; // lol
+  int nEvents = 20000; // lol
 
   for (Long64_t jentry=0; jentry<nEvents; jentry++){
   
@@ -251,9 +373,9 @@ void doZeroBiasPUStudy(bool doTow){
 
   }
      
-  //end event loop, now plot histos
+  //end event loop, now plot histos  
   TFile outFile( outFilename.c_str() , "new");
-  
+
   TCanvas* canvas = new TCanvas("canvas","",600,600);
   TLegend* legend = new TLegend(0.5,0.6,0.7,0.88);
   
@@ -411,7 +533,7 @@ void doZeroBiasPUStudy(bool doTow){
 
   
     for(uint pu=0;pu<puBins;pu++){
-      for(uint eta=27; eta<28; ++eta){
+      for(uint eta=0; eta<41; ++eta){
       
 	stringstream etaS("");
 	etaS << "_Eta" << eta+1;
@@ -422,7 +544,7 @@ void doZeroBiasPUStudy(bool doTow){
 	hTowEtPU[pu][eta]->Write();
 	stringstream fn("");
 	fn << "TowEtPU_" << pu << etaS.str() << ".pdf";
-	canvas->SaveAs(fn.str().c_str());
+	//canvas->SaveAs(fn.str().c_str());
 
 	// if(eta<28){
 	//   for(uint pu=0;pu<hECALTPEtPU.size();pu++){
@@ -446,101 +568,12 @@ void doZeroBiasPUStudy(bool doTow){
       }
     }
 
-    canvas->Close();
 
-    ofstream one;
-    ofstream three;
-    ofstream five;
-    ofstream ten;
-
-    one.open ("one.txt");
-    three.open ("three.txt");
-    five.open ("five.txt");
-    ten.open ("ten.txt");
     
-    stringstream intro;
-    intro << "# address to et sum tower Et threshold LUT\n" \
-      "# maps 11 bits to 9 bits\n" \
-      "# 11 bits = (compressedPileupEstimate << 6) | abs(ieta)\n" \
-      "# compressedPileupEstimate is unsigned 5 bits, abs(ieta) is unsigned 6 bits\n" \
-      "# data: tower energy threshold returned has 9 bits \n" \
-      "# anything after # is ignored with the exception of the header\n" \
-      "# the header is first valid line starting with #<header> versionStr nrBitsAddress nrBitsData </header>\n" \
-      "#<header> v1 11 9 </header>\n"; 
+    canvas->Close();
+    outFile.Close();
 
-    one.write(intro.str().c_str(), intro.str().length() );
-    three.write(intro.str().c_str(), intro.str().length() ); 
-    five.write(intro.str().c_str(), intro.str().length() );
-    ten.write(intro.str().c_str(), intro.str().length() );
-
-    int addr = 0;
-
-    for(uint pu=0;pu<puBins;pu++){
-      for(int eta=-1; eta<64; ++eta){	
-	
-	if(eta==28) continue;
-
-	if(eta==-1){
-	  one   << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
-	  three << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
-	  five  << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
-	  ten   << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
-	  ++addr;
-	  continue;
-	}
-	
-	if(eta>40){
-	  one   << addr  << " 0\t# dummy\n";
-	  three << addr  << " 0\t# dummy\n";
-	  five  << addr  << " 0\t# dummy\n";
-	  ten   << addr  << " 0\t# dummy\n";
-	  ++addr;  
-	  continue;
-	}
-	
-	double pass = 0;
-	double d1(999.),d3(999.),d5(999.),d10(999.);
-	double t1(999.),t3(999.),t5(999.),t10(999.);      
-
-	for(uint t=0; t<hTowEtPU[pu][eta]->GetNbinsX(); t++){
-	  if(hTowEtPU[pu][eta]->Integral(0,512)==0){
-	    t1=t3=t5=t10=0;
-	    break;
-	  }
-	  pass = hTowEtPU[pu][eta]->Integral(t,512)/hTowEtPU[pu][eta]->Integral(0,512);
-	  if( abs(pass-0.01) < d1  ){
-	    t1  = t;
-	    d1 = pass - 0.01;
-	  }
-	  if( abs(pass-0.03) < d3  ){
-	    t3  = t;
-	    d3 = pass - 0.03;
-	  }
-	  if( abs(pass-0.05) < d5  ){
-	    t5  = t;
-	    d5 = pass - 0.05;
-	  }
-	  if( abs(pass-0.1) < d10  ){
-	    t10  = t;
-	    d10 = pass - 0.1;
-	  }
-	}
-	
-	one   << addr  << " " << t1  << "\t# ieta = " << eta+1 << "\n";
-	three << addr  << " " << t3  << "\t# ieta = " << eta+1 << "\n";
-	five  << addr  << " " << t5  << "\t# ieta = " << eta+1 << "\n";
-	ten   << addr  << " " << t10 << "\t# ieta = " << eta+1 << "\n";
-	  
-	++addr;
-
-	cout << std::fixed << setprecision(1) << "PU = " << pu << "\t eta = " << eta+1 << "\t 1% = " << t1/2 << "\t 3% = " << t3/2 << "\t 5% = " << t5/2 << "\t 10% = " << t10/2 << endl;
-      }   
-    }
-
-    one.close();
-    three.close();
-    five.close();
-    ten.close();
-
+    makeLUT(outFilename, puBins);
+    
   }
 }
