@@ -15,6 +15,57 @@
 #include "L1Trigger/L1TNtuples/interface/L1AnalysisL1CaloTowerDataFormat.h"
 
 
+void fitProfile(TH1D* hProfNTowemuNVtx4){
+ 
+  TCanvas* profCanvas = new TCanvas("profCanvas","",600,600);
+ 
+  TH1D *hProfNTowemuNVtx4_fit2 = (TH1D*)hProfNTowemuNVtx4->Clone("hProfNTowemuNVtx4_fit2");
+  TH1D *hProfNTowemuNVtx4_fit3 = (TH1D*)hProfNTowemuNVtx4->Clone("hProfNTowemuNVtx4_fit3");
+  TH1D *hProfNTowemuNVtx4_fit4 = (TH1D*)hProfNTowemuNVtx4->Clone("hProfNTowemuNVtx4_fit4");
+  hProfNTowemuNVtx4->SetMarkerStyle(7);
+  hProfNTowemuNVtx4_fit2->SetMarkerStyle(7);
+  hProfNTowemuNVtx4_fit3->SetMarkerStyle(7);
+  hProfNTowemuNVtx4_fit4->SetMarkerStyle(7);
+  
+  TF1 *fit1 = new TF1("fit1","[0]*x+[1]");
+  fit1->SetParameter(0,0.5); 
+  fit1->SetParameter(1,4);   
+  fit1->SetRange(0,40);     
+  hProfNTowemuNVtx4->Fit("fit1","R");
+  TF1 *fit2 = new TF1("fit2","[0]*x+[1]");
+  fit2->SetParameter(0,1.5); 
+  fit2->SetParameter(1,0);   
+  fit2->SetRange(40,60);
+  hProfNTowemuNVtx4_fit2->Fit("fit2","R");
+  TF1 *fit3 = new TF1("fit3","[0]*x+[1]");
+  fit3->SetParameter(0,0.5);
+  fit3->SetParameter(1,4);  
+  fit3->SetRange(60,120);
+  hProfNTowemuNVtx4_fit3->Fit("fit3","R");   
+  TF1 *fit4 = new TF1("fit4","[0]*x+[1]");
+  fit4->SetParameter(0,0.5);
+  fit4->SetParameter(1,4);  
+  fit4->SetRange(120,160);   
+  hProfNTowemuNVtx4_fit4->Fit("fit4","R");
+  hProfNTowemuNVtx4->Draw();  
+  hProfNTowemuNVtx4_fit2->Draw("sames");  
+  hProfNTowemuNVtx4_fit3->Draw("sames");  
+  hProfNTowemuNVtx4_fit4->Draw("sames");  
+  gPad->Update();
+  TPaveStats *st1 = (TPaveStats*)hProfNTowemuNVtx4->FindObject("stats");
+  TPaveStats *st2 = (TPaveStats*)hProfNTowemuNVtx4_fit2->FindObject("stats");
+  TPaveStats *st3 = (TPaveStats*)hProfNTowemuNVtx4_fit3->FindObject("stats");
+  TPaveStats *st4 = (TPaveStats*)hProfNTowemuNVtx4_fit4->FindObject("stats");
+  st1->SetY1NDC(0.75); st1->SetY2NDC(0.95); 
+  st2->SetY1NDC(0.55); st2->SetY2NDC(0.75);
+  st3->SetY1NDC(0.35); st3->SetY2NDC(0.55);  
+  st4->SetY1NDC(0.15); st4->SetY2NDC(0.35);  
+  fit1->Draw("sames"); fit2->Draw("sames"); fit3->Draw("sames"); fit4->Draw("sames");
+  hProfNTowemuNVtx4->Write();
+  profCanvas->SaveAs("ProfNTowemuNVtx4.pdf");
+
+}
+
 void makeLUT(string filename, int puBins){
 
   //check file doesn't exist
@@ -34,16 +85,14 @@ void makeLUT(string filename, int puBins){
     }
   }  
 
+  ofstream p5;
   ofstream one;
   ofstream three;
-  ofstream five;
-  ofstream ten;
 
+  p5.open("p5.txt");
   one.open ("one.txt");
   three.open ("three.txt");
-  five.open ("five.txt");
-  ten.open ("ten.txt");
-    
+      
   stringstream intro;
   intro << "# address to et sum tower Et threshold LUT\n" \
     "# maps 11 bits to 9 bits\n" \
@@ -54,11 +103,10 @@ void makeLUT(string filename, int puBins){
     "# the header is first valid line starting with #<header> versionStr nrBitsAddress nrBitsData </header>\n" \
     "#<header> v1 11 9 </header>\n"; 
 
+  p5.write(intro.str().c_str(), intro.str().length() );
   one.write(intro.str().c_str(), intro.str().length() );
   three.write(intro.str().c_str(), intro.str().length() ); 
-  five.write(intro.str().c_str(), intro.str().length() );
-  ten.write(intro.str().c_str(), intro.str().length() );
-
+  
   int addr = 0;
 
   for(uint pu=0;pu<puBins;pu++){
@@ -67,33 +115,45 @@ void makeLUT(string filename, int puBins){
       if(eta==28) continue;
 
       if(eta==-1){
-	one   << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
-	three << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
-	five  << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
-	ten   << addr  << " 0\t# nTT4 = " << pu*5 << "-" << pu*5+5 << "  ieta = 0\n";
+	p5    << addr  << " 0             # nTT4 = " << pu*5 << "-" << pu*5+5 << " ieta = 0\n";
+	one   << addr  << " 0             # nTT4 = " << pu*5 << "-" << pu*5+5 << " ieta = 0\n";
+	three << addr  << " 0             # nTT4 = " << pu*5 << "-" << pu*5+5 << " ieta = 0\n";
 	++addr;
 	continue;
       }
+
+      if((eta<14 || pu < 8) && eta<41){
+	p5    << addr  << " " << 0  << "             # ieta = " << eta+1 << "\n";
+	one   << addr  << " " << 0  << "             # ieta = " << eta+1 << "\n";
+       	three << addr  << " " << 0  << "             # ieta = " << eta+1 << "\n";
+	++addr;  
+       	continue;
+      }
 	
       if(eta>40){
-	one   << addr  << " 0\t# dummy\n";
-	three << addr  << " 0\t# dummy\n";
-	five  << addr  << " 0\t# dummy\n";
-	ten   << addr  << " 0\t# dummy\n";
+	p5    << addr  << " 0 #dummy\n";
+	one   << addr  << " 0 #dummy\n";
+	three << addr  << " 0 #dummy\n";
 	++addr;  
 	continue;
       }
 	
       double pass = 0;
-      double d1(999.),d3(999.),d5(999.),d10(999.);
-      double t1(999.),t3(999.),t5(999.),t10(999.);      
+      double dp5(999.),d1(999.),d3(999.);
+      double tp5(999.),t1(999.),t3(999.);      
 
-      for(uint t=0; t<hTowEtPU[pu][eta]->GetNbinsX(); t++){
-	if(hTowEtPU[pu][eta]->Integral(0,512)==0){
-	  t1=t3=t5=t10=0;
+      int nBins = hTowEtPU[pu][eta]->GetNbinsX();
+
+      for(uint t=0; t<nBins; t++){
+	if(hTowEtPU[pu][eta]->Integral(1,nBins)==0){
+	  tp5=t1=t3=0;
 	  break;
 	}
-	pass = hTowEtPU[pu][eta]->Integral(t,512)/hTowEtPU[pu][eta]->Integral(0,512);
+	pass = hTowEtPU[pu][eta]->Integral(t+1,nBins)/hTowEtPU[pu][eta]->Integral(1,nBins);
+	if( abs(pass-0.005) < dp5  ){
+	  tp5  = t;
+	  dp5 = pass - 0.005;
+	}
 	if( abs(pass-0.01) < d1  ){
 	  t1  = t;
 	  d1 = pass - 0.01;
@@ -102,31 +162,38 @@ void makeLUT(string filename, int puBins){
 	  t3  = t;
 	  d3 = pass - 0.03;
 	}
-	if( abs(pass-0.05) < d5  ){
-	  t5  = t;
-	  d5 = pass - 0.05;
-	}
-	if( abs(pass-0.1) < d10  ){
-	  t10  = t;
-	  d10 = pass - 0.1;
-	}
       }
-	
-      one   << addr  << " " << t1  << "\t# ieta = " << eta+1 << "\n";
-      three << addr  << " " << t3  << "\t# ieta = " << eta+1 << "\n";
-      five  << addr  << " " << t5  << "\t# ieta = " << eta+1 << "\n";
-      ten   << addr  << " " << t10 << "\t# ieta = " << eta+1 << "\n";
-	  
+
+
+      int sat = 20;
+
+      // double rai = 1.2;
+      // double div = 40;
+      // double off = 0.2;
+
+      // tp5  = round( tp5 *((pow(float(pu),rai)/div)+off) );
+      // t1   = round( t1  *((pow(float(pu),rai)/div)+off) );
+      // t3   = round( t3  *((pow(float(pu),rai)/div)+off) );
+
+      //if(eta==27) cout << pu << "   " << ((pow(float(pu),rai)/div)+off) << endl; 
+
+      if(tp5>sat)   tp5=sat;      
+      if(t1 >sat)   t1 =sat;
+      if(t3 >sat)   t3 =sat;
+
+      p5    << addr  << " " << tp5  << "             # ieta = " << eta+1 << "\n";          
+      one   << addr  << " " << t1   << "             # ieta = " << eta+1 << "\n";
+      three << addr  << " " << t3   << "             # ieta = " << eta+1 << "\n";
+      	  
       ++addr;
 
       //cout << std::fixed << setprecision(1) << "PU = " << pu << "\t eta = " << eta+1 << "\t 1% = " << t1/2 << "\t 3% = " << t3/2 << "\t 5% = " << t5/2 << "\t 10% = " << t10/2 << endl;
     }   
   }
 
+  p5.close();
   one.close();
   three.close();
-  five.close();
-  ten.close();
 
 }
 
@@ -155,15 +222,27 @@ void formatPlot2D(TH2D* plot2d){
 
 
 //main plotting function
-void doZeroBiasPUStudy(bool doTow, bool doLUT){
+void doZeroBiasPUStudy(bool doTow, bool doLUT, bool doFit){
 
   //output filename
-  string outFilename = "zbPUStudy.root";
+  string outFilename = "zbPUStudy_1904.root";
 
-  vector<int> puBinBs = {0,5,7,10,12,14,16,18,21,23,26,29,32,34,36,38,
-			 40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,999};
- 
+  vector<int> puBinBs = {1,3,6,9,11,14,17,20,23,25,28,30,33,35,37,39,
+			 41,43,45,47,49,51,53,55,57,59,62,64,66,69,71,74,999};
+
   int puBins = puBinBs.size()-1;
+
+  if(doFit){
+    //check file doesn't exist
+    TFile* file = TFile::Open(outFilename.c_str());
+    if (file==0){
+      cout << "TERMINATE: input file does not exist: " << outFilename << endl;
+      return;
+    }
+    TH1D* hProfNTowemuNVtx4 = (TH1D*)file->Get("hProfNTowemuNVtx4");
+    fitProfile(hProfNTowemuNVtx4);
+    return;
+  }
 
   if(doLUT){
     makeLUT(outFilename, puBins);
@@ -171,7 +250,7 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
   }  
 
   //input ntuple
-  string  inputFile01 = "root://eoscms.cern.ch//eos/cms/store/group/dpg_trigger/comm_trigger/L1Trigger/bundocka/ZeroBias/zbLUT/180305_142059/0000/L1Ntuple_*.root";
+  string  inputFile01 = "root://eoscms.cern.ch//eos/cms/store/group/dpg_trigger/comm_trigger/L1Trigger/bundocka/zbLUT/180313_160352/0000/L1Ntuple_1*.root";
   
   //check file doesn't exist
   TFile* fileCheck = TFile::Open( outFilename.c_str() );
@@ -236,6 +315,7 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
   TH1D* hHCALTPEt = new TH1D("hHCALTPEt",";HCAL TP E_{T}; #TPs", 256, 0, 128);
   vector<vector<TH1D*> > hHCALTPEtPU(puBins, vector<TH1D*> (41));
 
+  TH2D* hTowEtaPhi = new TH2D("hTowEtaPhi","; eta; phi", 100, -50, 50, 72, 0, 72);
   
   for(uint pu=0; pu<puBins;++pu){
     stringstream tempPU;
@@ -283,7 +363,7 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
   nentries = treeL1Towemu->GetEntries();
 
   // Number of events to run over
-  int nEvents = 20000; // lol
+  int nEvents = nentries; // lol
 
   for (Long64_t jentry=0; jentry<nEvents; jentry++){
   
@@ -316,7 +396,7 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
       nHCALTP = l1TPhw_->nHCALTP;
       nECALTP = l1TPhw_->nECALTP;    
       for(uint puIt=0; puIt<puBins;puIt++){
-	if(nVtx >= puBinBs[puIt] && nVtx <= puBinBs[puIt+1]){
+	if(nVtx >= puBinBs[puIt] && nVtx < puBinBs[puIt+1]){
 	  nVtxBin = puIt;
 	  break;
 	}
@@ -325,6 +405,8 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
 
     
     for(uint towIt=0; towIt<nTowemu; ++towIt){
+
+      hTowEtaPhi->Fill(l1Towemu_->ieta[towIt], l1Towemu_->iphi[towIt]);
       if(abs(l1Towemu_->ieta[towIt])<5) nTowemu4++;
       if(!doTow){ 
 	towOcc[abs(l1Towemu_->ieta[towIt])-1] +=1;
@@ -337,13 +419,10 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
       }
     }
 
-    
-    
     if(!doTow){ 
       for(uint eta=0;eta<41;eta++){
 	hTowEtPU[nVtxBin][eta]->Fill(0.,(144-towOcc[eta]));
       }
-    
     
       
       // //fill ECAL TP histos
@@ -360,6 +439,7 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
       //   hProfHCALTPEtEta->Fill(l1TPhw_->hcalTPieta[tpIt],l1TPhw_->hcalTPet[tpIt]);
       //   hProfHCALTPEtEtaPU[nVtxBin]->Fill(l1TPhw_->hcalTPieta[tpIt],l1TPhw_->hcalTPet[tpIt]);
       // }
+
     }
 
     //fill emulated tower histos
@@ -386,7 +466,12 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
   formatPlot1D(hNTow_emu,4); 
   formatPlot1D(hNTow4_emu,4); 
   formatPlot1D(hNVtx,4);
-    
+  formatPlot2D(hTowEtaPhi);
+
+  hTowEtaPhi->Draw("colz");
+  hTowEtaPhi->Write();
+  canvas->SaveAs("towEtaPhi.pdf");
+
   formatPlot2D(hNTowemuVsNVtx);
  
   hNTow_emu->Draw();
@@ -419,47 +504,7 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
   hProfNVtxNTowemu4->Write();
   canvas->SaveAs("ProfNVtxNTowemu4.pdf");
 
-  
-  TH1D *hProfNTowemuNVtx4_fit2 = (TH1D*)hProfNTowemuNVtx4->Clone("hProfNTowemuNVtx4_fit2");
-  TH1D *hProfNTowemuNVtx4_fit3 = (TH1D*)hProfNTowemuNVtx4->Clone("hProfNTowemuNVtx4_fit3");
-  hProfNTowemuNVtx4->SetMarkerStyle(7);
-  hProfNTowemuNVtx4_fit2->SetMarkerStyle(7);
-  hProfNTowemuNVtx4_fit3->SetMarkerStyle(7);
-
-  TF1 *fit1 = new TF1("fit1","[0]*x+[1]");
-  fit1->SetParameter(0,0.5); 
-  fit1->SetParameter(1,4);   
-  fit1->SetRange(10,40);     
-  hProfNTowemuNVtx4->Fit("fit1","R");
-  TF1 *fit2 = new TF1("fit2","[0]*x+[1]");
-  fit2->SetParameter(0,1.5); 
-  fit2->SetParameter(1,0);   
-  fit2->SetRange(40,60);
-  hProfNTowemuNVtx4_fit2->Fit("fit2","R");
-  TF1 *fit3 = new TF1("fit3","[0]*x+[1]");
-  fit3->SetParameter(0,0.5);
-  fit3->SetParameter(1,4);  
-  fit3->SetRange(60,160);   
-  hProfNTowemuNVtx4_fit3->Fit("fit3","R");
-  hProfNTowemuNVtx4->Draw();  
-  hProfNTowemuNVtx4_fit2->Draw("sames");  
-  hProfNTowemuNVtx4_fit3->Draw("sames");  
-  gPad->Update();
-  TPaveStats *st1 = (TPaveStats*)hProfNTowemuNVtx4->FindObject("stats");
-  TPaveStats *st2 = (TPaveStats*)hProfNTowemuNVtx4_fit2->FindObject("stats");
-  TPaveStats *st3 = (TPaveStats*)hProfNTowemuNVtx4_fit3->FindObject("stats");
-  st1->SetY1NDC(0.75);
-  st1->SetY2NDC(0.95);
-  st2->SetY1NDC(0.55);
-  st2->SetY2NDC(0.75);
-  st3->SetY1NDC(0.35);
-  st3->SetY2NDC(0.55);  
-  fit1->Draw("sames");
-  fit2->Draw("sames");
-  fit3->Draw("sames");
-  hProfNTowemuNVtx4->Write();
-  canvas->SaveAs("ProfNTowemuNVtx4.pdf");
-
+  fitProfile(hProfNTowemuNVtx4);
 
   if(!doTow){ 
 
@@ -483,13 +528,13 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
       hProfTowEtEtaPU[i]->Write();
       stringstream fn("");
       fn << "ProfTowEtEtaPU_" << i << ".pdf";
-      canvas->SaveAs(fn.str().c_str());
+      //canvas->SaveAs(fn.str().c_str());
     }
     hProfECALTPEtEta->SetMarkerStyle(7);
     hProfECALTPEtEta->SetMaximum(4.0);
     hProfECALTPEtEta->Draw("");
     hProfECALTPEtEta->Write();
-    canvas->SaveAs("ProfECALTPEtEta.pdf");
+    //canvas->SaveAs("ProfECALTPEtEta.pdf");
 
     for(uint i=0;i<hProfECALTPEtEtaPU.size();i++){
       hProfECALTPEtEtaPU[i]->SetMarkerStyle(7);
@@ -505,7 +550,7 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
     hProfHCALTPEtEta->SetMaximum(4.0);
     hProfHCALTPEtEta->Draw("");
     hProfHCALTPEtEta->Write();
-    canvas->SaveAs("ProfHCALTPEtEta.pdf");
+    //canvas->SaveAs("ProfHCALTPEtEta.pdf");
 
     for(uint i=0;i<hProfHCALTPEtEtaPU.size();i++){
       hProfHCALTPEtEtaPU[i]->SetMarkerStyle(7);
@@ -523,20 +568,20 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
     hTowEt->Write("");
     canvas->SaveAs("TowEt.pdf");
 
-    // hECALTPEt->Draw("");
-    // hECALTPEt->Write("");
-    // canvas->SaveAs("ECALTPEt.pdf");
+    hECALTPEt->Draw("");
+    hECALTPEt->Write("");
+    //canvas->SaveAs("ECALTPEt.pdf");
 
-    // hHCALTPEt->Draw("");
-    // hHCALTPEt->Write("");
-    // canvas->SaveAs("HCALTPEt.pdf");
+    hHCALTPEt->Draw("");
+    hHCALTPEt->Write("");
+    //canvas->SaveAs("HCALTPEt.pdf");
 
   
     for(uint pu=0;pu<puBins;pu++){
       for(uint eta=0; eta<41; ++eta){
       
-	stringstream etaS("");
-	etaS << "_Eta" << eta+1;
+    	stringstream etaS("");
+    	etaS << "_Eta" << eta+1;
 	  
 	formatPlot1D(hTowEtPU[pu][eta],4);
 	hTowEtPU[pu][eta]->GetXaxis()->SetLimits(0.,50.);
@@ -546,33 +591,32 @@ void doZeroBiasPUStudy(bool doTow, bool doLUT){
 	fn << "TowEtPU_" << pu << etaS.str() << ".pdf";
 	//canvas->SaveAs(fn.str().c_str());
 
-	// if(eta<28){
-	//   for(uint pu=0;pu<hECALTPEtPU.size();pu++){
-	// 	formatPlot1D(hECALTPEtPU[pu][eta],4);
-	// 	hECALTPEtPU[pu][eta]->Draw("");
-	// 	hECALTPEtPU[pu][eta]->Write();
-	// 	stringstream fn("");
-	// 	fn << "ECALTPEtPU_" << pu << etaS.str() << ".pdf";
-	// 	canvas->SaveAs(fn.str().c_str());
-	//   }
+	// for(uint pu=0;pu<hECALTPEtPU.size();pu++){
+	//   formatPlot1D(hECALTPEtPU[pu][eta],4);
+	//   hECALTPEtPU[pu][eta]->Draw("");
+	//   hECALTPEtPU[pu][eta]->Write();
+	//   stringstream fn("");
+	//   fn << "ECALTPEtPU_" << pu << etaS.str() << ".pdf";
+	//   //canvas->SaveAs(fn.str().c_str());
 	// }
-
+     
 	// for(uint pu=0;pu<hHCALTPEtPU.size();pu++){
 	//   formatPlot1D(hHCALTPEtPU[pu][eta],4);
 	//   hHCALTPEtPU[pu][eta]->Draw("");
-	//   hHCALTPEtPU[pu][eta]->Write();
-	//   stringstream fn("");
-	//   fn << "HCALTPEtPU_" << pu << etaS.str() << ".pdf";
-	//   canvas->SaveAs(fn.str().c_str());
+	// hHCALTPEtPU[pu][eta]->Write();
+	// stringstream fn("");
+	// fn << "HCALTPEtPU_" << pu << etaS.str() << ".pdf";
+	// //canvas->SaveAs(fn.str().c_str());
 	// }
       }
     }
-
-
+    
+    
+    
     
     canvas->Close();
     outFile.Close();
-
+    
     makeLUT(outFilename, puBins);
     
   }
