@@ -30,6 +30,8 @@
 #include "L1Trigger/L1TNtuples/interface/L1AnalysisRecoMuon2DataFormat.h"
 #include "L1Trigger/L1TNtuples/interface/L1AnalysisRecoElectronDataFormat.h"
 
+#include "L1Trigger/L1TNtuples/interface/L1AnalysisL1Phase2CaloDataFormat.h"
+
 namespace{
   namespace{
     L1Analysis::L1AnalysisEventDataFormat          pL1ev; 
@@ -62,5 +64,7 @@ namespace{
     L1Analysis::L1AnalysisRecoTauDataFormat        pL1tau; 
     L1Analysis::L1AnalysisRecoMuon2DataFormat      pL1muon2;
     L1Analysis::L1AnalysisRecoElectronDataFormat   pL1electron;
+
+    L1Analysis::L1AnalysisL1Phase2CaloDataFormat      pL1phase2Calo; 
    }
 }

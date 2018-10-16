@@ -38,10 +38,10 @@ from L1Trigger.L1TGlobal.simDigis_cff import *
 
 # define a core which can be extented in customizations:
 SimL1EmulatorCore = cms.Sequence(
-    SimL1TCalorimeter +
-    SimL1TMuon +
-    SimL1TechnicalTriggers +
-    SimL1TGlobal
+    #SimL1TCalorimeter +
+    #SimL1TMuon +
+    #SimL1TechnicalTriggers +
+    #SimL1TGlobal
     )
 
 SimL1Emulator = cms.Sequence( SimL1EmulatorCore )
@@ -69,9 +69,9 @@ phase2_hgcal.toReplaceWith( SimL1Emulator , _phase2_siml1emulator )
 # If PreMixing, don't run these modules during first step
 from Configuration.ProcessModifiers.premix_stage1_cff import premix_stage1
 premix_stage1.toReplaceWith(SimL1Emulator, SimL1Emulator.copyAndExclude([
-    SimL1TCalorimeter,
-    SimL1TechnicalTriggers,
-    SimL1TGlobal
+    #SimL1TCalorimeter,
+    #SimL1TechnicalTriggers,
+    #SimL1TGlobal
 ]))
 
 # ########################################################################
@@ -83,15 +83,15 @@ phase2_SimL1Emulator = SimL1Emulator.copy()
 # ########################################################################
 from L1Trigger.VertexFinder.VertexProducer_cff import *
 
-phase2_SimL1Emulator += VertexProducer
+#phase2_SimL1Emulator += VertexProducer
 
 # Kalman Barrel MTF
 # ########################################################################
 from L1Trigger.L1TMuonBarrel.simKBmtfStubs_cfi import *
 from L1Trigger.L1TMuonBarrel.simKBmtfDigis_cfi import *
 
-phase2_SimL1Emulator += simKBmtfStubs
-phase2_SimL1Emulator += simKBmtfDigis
+#phase2_SimL1Emulator += simKBmtfStubs
+#phase2_SimL1Emulator += simKBmtfDigis
 
 # Barrel EGamma
 # ########################################################################
@@ -99,22 +99,27 @@ from L1Trigger.L1CaloTrigger.l1EGammaCrystalsProducer_cfi import *
 
 phase2_SimL1Emulator += l1EGammaCrystalsProducer
 
+# Calo Et Sums
+# ########################################################################
+from L1Trigger.L1CaloTrigger.L1TCaloEtSumProducer_cfi import *
+phase2_SimL1Emulator += L1TCaloEtSumProducer
+
 # Tk + StandaloneObj
 # (include L1TkPrimaryVertex)
 # ########################################################################
 from L1Trigger.L1TTrackMatch.L1TkObjectProducers_cff import *
-phase2_SimL1Emulator += L1TkElectrons
-phase2_SimL1Emulator += L1TkIsoElectrons
-phase2_SimL1Emulator += L1TkPhotons
-phase2_SimL1Emulator += L1TkPrimaryVertex
-phase2_SimL1Emulator += L1TkCaloJets
-phase2_SimL1Emulator += L1TrackerJets
-phase2_SimL1Emulator += L1TrackerEtMiss
-phase2_SimL1Emulator += L1TkCaloHTMissVtx
-phase2_SimL1Emulator += L1TrackerHTMiss
-phase2_SimL1Emulator += L1TkMuons
-phase2_SimL1Emulator += L1TkGlbMuons
-phase2_SimL1Emulator += L1TkTauFromCalo
+#phase2_SimL1Emulator += L1TkElectrons
+#phase2_SimL1Emulator += L1TkIsoElectrons
+#phase2_SimL1Emulator += L1TkPhotons
+#phase2_SimL1Emulator += L1TkPrimaryVertex
+#phase2_SimL1Emulator += L1TkCaloJets
+#phase2_SimL1Emulator += L1TrackerJets
+#phase2_SimL1Emulator += L1TrackerEtMiss
+#phase2_SimL1Emulator += L1TkCaloHTMissVtx
+#phase2_SimL1Emulator += L1TrackerHTMiss
+#phase2_SimL1Emulator += L1TkMuons
+#phase2_SimL1Emulator += L1TkGlbMuons
+#phase2_SimL1Emulator += L1TkTauFromCalo
 
 # PF Candidates
 # ########################################################################
@@ -128,9 +133,9 @@ from L1Trigger.Phase2L1ParticleFlow.l1ParticleFlow_cff import *
 #    l1pfProducer
 #)
 l1pfProducerTightTK = l1pfProducer.clone(trkMinStubs = 6)
-l1ParticleFlow += l1pfProducerTightTK
+#l1ParticleFlow += l1pfProducerTightTK
 
-phase2_SimL1Emulator += l1ParticleFlow
+#phase2_SimL1Emulator += l1ParticleFlow
 
 # PF METs
 # ########################################################################
@@ -146,7 +151,7 @@ l1MetPuppi   = pfMet.clone(src = "l1pfProducer:Puppi")
 l1PFMets = cms.Sequence( l1MetCalo + l1MetTK + l1MetTKV + l1MetPF + l1MetPuppi
                         + l1MetTightTK + l1MetTightTKV)
 
-phase2_SimL1Emulator += l1PFMets
+#phase2_SimL1Emulator += l1PFMets
 
 # PF Jets
 # ########################################################################
@@ -161,7 +166,7 @@ ak4L1Puppi   = ak4PFJets.clone(src = 'l1pfProducer:Puppi')
 l1PFJets = cms.Sequence( ak4L1Calo + ak4L1TK + ak4L1TKV + ak4L1PF + ak4L1Puppi
                         + ak4L1TightTK + ak4L1TightTKV)
 
-phase2_SimL1Emulator += l1PFJets
+#phase2_SimL1Emulator += l1PFJets
 
 from Configuration.Eras.Modifier_phase2_trigger_cff import phase2_trigger
 phase2_trigger.toReplaceWith( SimL1Emulator , phase2_SimL1Emulator)
