@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-L1TCaloEtSumProducer = cms.EDProducer('L1TCaloEtSumProducer',
+L1TCaloEtSums = cms.EDProducer('L1TCaloEtSumProducer',
   ecalColl = cms.InputTag("l1EGammaCrystalsProducer","L1EGXtalClusterNoCuts"),
   ecalEtMin = cms.double(0.5),
   hcalDigis = cms.VInputTag(cms.InputTag('simHcalTriggerPrimitiveDigis')),
