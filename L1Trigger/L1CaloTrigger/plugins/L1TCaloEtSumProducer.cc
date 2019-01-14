@@ -137,8 +137,6 @@ void
 L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-  std::cout << " You fucking wat m8?" << std::endl;
-
   buildTowers(iEvent, iSetup);
   
   math::XYZTLorentzVector p4;
