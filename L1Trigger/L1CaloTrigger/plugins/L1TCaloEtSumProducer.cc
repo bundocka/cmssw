@@ -137,8 +137,11 @@ void
 L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-  buildTowers(iEvent, iSetup);
+  etsums_.clear();
+  towers_.clear();
   
+  buildTowers(iEvent, iSetup);
+
   math::XYZTLorentzVector p4;
   int ntowers = 0;
 
@@ -254,20 +257,9 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // saturate energy sums if saturated TP/tower
 
-  if(ecalEtSat) etem = 0xffff;
-  if(ettSat) et = 0xffff;
-  if(ettHFSat) etHF = 0xffff;
-  if(metSat){ 
-    ex = 0x7fffffff;
-    ey = 0x7fffffff;
-  }
-  if(metHFSat){
-    exHF = 0x7fffffff;
-    eyHF = 0x7fffffff;
-  }
-
-  if (et>0xFFF)   et   = 0xFFF;
-  if (etem>0xFFF) etem = 0xFFF;
+  if(ecalEtSat || etem > 0xFFF) etem = 0xFFF;
+  if(ettSat || et > 0xFFF) et = 0xFFF;
+  if(ettHFSat || etHF > 0xFFF) etHF = 0xFFF;
   
   unsigned int met(0), metHF(0);
   int metPhi(0), metPhiHF(0);
@@ -282,8 +274,8 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if ( (exHF != 0 || eyHF != 0) && !metHFSat ) cordic_( exHF , eyHF , metPhiHF , metHF );
   metHF >>= 10;
 
-  if(metSat) met=0xFFF;
-  if(metHFSat) metHF=0xFFF;
+  if(metSat || met > 0xFFF) met=0xFFF;
+  if(metHFSat || metHF > 0xFFF) metHF=0xFFF;
 
   // Make final collection
 
@@ -306,24 +298,6 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   iEvent.put(std::move(etsums));
 
-
-/* This is an event example
-   //Read 'ExampleData' from the Event
-   Handle<ExampleData> pIn;
-   iEvent.getByLabel("example",pIn);
-
-   //Use the ExampleData to create an ExampleData2 which 
-   // is put into the Event
-   iEvent.put(std::make_unique<ExampleData2>(*pIn));
-*/
-
-/* this is an EventSetup example
-   //Read SetupData from the SetupRecord in the EventSetup
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
-*/
-
-
  
 }
 
@@ -338,6 +312,7 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
 
   for(auto it = ecalClusters->begin(), ed = ecalClusters->end(); it != ed; ++it) {
     if (it->e5x5() <= ecalEtMin_) continue;
+    //if (it->e5x5() > 2) std::cout << "e5x5 = " << it->e5x5() << std::endl;
     l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->hwEta()), it->hwPhi());
     if(tow.hwPt()==0){
       tow.setHwPt(it->e5x5());
@@ -358,6 +333,7 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
       for (const auto & itr : *hcalTPs) {
 	HcalTrigTowerDetId id = itr.id();
 	double et = decoder_->hcaletValue(itr.id(), itr.t0());
+	//if (et > 2) std::cout << "HB Et = " << et << std::endl;
 	if (et <= 0) continue;
 	l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(id.ieta()), id.iphi());
 	if(tow.hwPt()==0){
@@ -371,19 +347,21 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
       }
     }
   } 
-   
+
   // HGC TPs
-  edm::Handle<l1t::HGCalTowerBxCollection> hgCalTPs;
-  iEvent.getByToken(hgCalColl_, hgCalTPs);
-  for(auto it = hgCalTPs->begin(), ed = hgCalTPs->end(); it != ed; ++it) {
+  edm::Handle<l1t::HGCalTowerBxCollection> hgCalTowers;
+  iEvent.getByToken(hgCalColl_, hgCalTowers);
+  for(auto it = hgCalTowers->begin(), end = hgCalTowers->end(); it != end; ++it) {
+    //if (it->etHad() > 2) std::cout << "HGC Had Et = " << it->etHad() << std::endl;
+    //if (it->etEm() > 2) std::cout << "HGC Em Et = " << it->etEm() << std::endl;
     l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->hwEta()), it->hwPhi());
     if(tow.hwPt()==0){
-      tow.setHwPt(it->hwPt());
+      tow.setHwPt(it->etHad()+it->etEm());
       tow.setHwEta(it->hwEta());
       tow.setHwPhi(it->hwPhi());
       towers_.push_back(tow);
     } else {
-      tow.setHwPt(it->hwPt()+tow.hwPt());
+      tow.setHwPt(it->etHad()+it->etEm()+tow.hwPt());
     }
   }
 
