@@ -311,7 +311,7 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
   iEvent.getByToken(ecalColl_, ecalClusters);
 
   for(auto it = ecalClusters->begin(), ed = ecalClusters->end(); it != ed; ++it) {
-    if (it->e5x5() <= ecalEtMin_) continue;
+    if (it->e5x5() < ecalEtMin_) continue;
     //if (it->e5x5() > 2) std::cout << "e5x5 = " << it->e5x5() << std::endl;
     l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->hwEta()), it->hwPhi());
     if(tow.hwPt()==0){
