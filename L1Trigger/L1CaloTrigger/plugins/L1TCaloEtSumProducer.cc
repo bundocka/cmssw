@@ -39,6 +39,7 @@
 
 #include "L1Trigger/L1TCalorimeter/interface/CaloTools.h"
 #include "L1Trigger/L1TCalorimeter/interface/Cordic.h"
+#include "L1Trigger/Phase2L1ParticleFlow/interface/CaloClusterer.h"
 
 
 // class declaration
@@ -145,9 +146,9 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   math::XYZTLorentzVector p4;
   int ntowers = 0;
 
-  int ex(0), ey(0), et(0);
-  int exHF(0), eyHF(0), etHF(0);
-  int etem(0);
+  double ex(0), ey(0), et(0);
+  double exHF(0), eyHF(0), etHF(0);
+  double etem(0);
   bool ettSat(false), ettHFSat(false), ecalEtSat(false), metSat(false), metHFSat(false);
 
   // etaSide=1 is positive eta, etaSide=-1 is negative eta
@@ -162,9 +163,9 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       int ieta = etaSide * absieta;
       
-      int ringEx(0), ringEy(0), ringEt(0);
-      int ringExHF(0), ringEyHF(0), ringEtHF(0);
-      int ringEtEm(0);
+      double ringEx(0), ringEy(0), ringEt(0);
+      double ringExHF(0), ringEyHF(0), ringEtHF(0);
+      double ringEtEm(0);
       unsigned int ringNtowers(0);
       unsigned int ringMB0(0), ringMB1(0);
 
@@ -310,14 +311,14 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
   edm::Handle<l1slhc::L1EGCrystalClusterCollection> ecalClusters;
   iEvent.getByToken(ecalColl_, ecalClusters);
 
-  for(auto it = ecalClusters->begin(), ed = ecalClusters->end(); it != ed; ++it) {
+  for(auto it = ecalClusters->begin(), end = ecalClusters->end(); it != end; ++it) {
     if (it->e5x5() < ecalEtMin_) continue;
     //if (it->e5x5() > 2) std::cout << "e5x5 = " << it->e5x5() << std::endl;
-    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->hwEta()), it->hwPhi());
+    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->eta()), it->phi());
     if(tow.hwPt()==0){
       tow.setHwPt(it->e5x5());
-      tow.setHwEta(it->hwEta());
-      tow.setHwPhi(it->hwPhi());
+      tow.setHwEta(it->eta());
+      tow.setHwPhi(it->phi());
       towers_.push_back(tow);
     } else {
       tow.setHwPt(it->e5x5()+tow.hwPt());
@@ -352,13 +353,13 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
   edm::Handle<l1t::HGCalTowerBxCollection> hgCalTowers;
   iEvent.getByToken(hgCalColl_, hgCalTowers);
   for(auto it = hgCalTowers->begin(), end = hgCalTowers->end(); it != end; ++it) {
-    //if (it->etHad() > 2) std::cout << "HGC Had Et = " << it->etHad() << std::endl;
-    //if (it->etEm() > 2) std::cout << "HGC Em Et = " << it->etEm() << std::endl;
-    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->hwEta()), it->hwPhi());
+    if (it->etHad() > 2) std::cout << "HGC Had Et = " << it->etHad() << std::endl;
+    if (it->etEm() > 2) std::cout << "HGC Em Et = " << it->etEm() << std::endl;
+    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->eta()), it->phi());
     if(tow.hwPt()==0){
       tow.setHwPt(it->etHad()+it->etEm());
-      tow.setHwEta(it->hwEta());
-      tow.setHwPhi(it->hwPhi());
+      tow.setHwEta(it->eta());
+      tow.setHwPhi(it->phi());
       towers_.push_back(tow);
     } else {
       tow.setHwPt(it->etHad()+it->etEm()+tow.hwPt());
