@@ -59,13 +59,6 @@ private:
   
   Cordic cordic_;
 
-  //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-  //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-  //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-  //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-  
-  // ----------member data ---------------------------
-
   edm::EDGetTokenT<l1slhc::L1EGCrystalClusterCollection> ecalColl_;
   double ecalEtMin_;
 
@@ -86,13 +79,6 @@ private:
   
 };
 
-// constants, enums and typedefs
-
-// static data member definitions
-
-// constructors and destructor
-
-
 L1TCaloEtSumProducer::L1TCaloEtSumProducer(const edm::ParameterSet& iConfig) :
   cordic_(Cordic(144*16,17,8)),
   ecalColl_(consumes<l1slhc::L1EGCrystalClusterCollection>(iConfig.getParameter<edm::InputTag>("ecalColl"))),
@@ -110,13 +96,6 @@ L1TCaloEtSumProducer::L1TCaloEtSumProducer(const edm::ParameterSet& iConfig) :
   produces<l1t::CaloTowerBxCollection> ();
   produces<l1t::EtSumBxCollection>();
 
-   //if do put with a label
-  //produces<ExampleData2>("label");
- 
-   //if you want to put into the Run
-   //produces<ExampleData2,InRun>();
-
-  //now do what ever other initialization is needed
   for (auto & tag : iConfig.getParameter<std::vector<edm::InputTag>>("hcalDigis")) {
     hcalDigis_.push_back(consumes<HcalTrigPrimDigiCollection>(tag));
   }
@@ -126,14 +105,9 @@ L1TCaloEtSumProducer::L1TCaloEtSumProducer(const edm::ParameterSet& iConfig) :
 
 L1TCaloEtSumProducer::~L1TCaloEtSumProducer()
 {
-   // do anything here that needs to be done at destruction time
-   // (e.g. close files, deallocate resources etc.)
 }
 
 
-// member functions
-
-// ------------ method called to produce the data  ------------
 void
 L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
@@ -395,39 +369,6 @@ L1TCaloEtSumProducer::beginStream(edm::StreamID)
 void
 L1TCaloEtSumProducer::endStream() {
 }
-
-// ------------ method called when starting to processes a run  ------------
-/*
-void
-L1TCaloEtSumProducer::beginRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
- 
-// ------------ method called when ending the processing of a run  ------------
-/*
-void
-L1TCaloEtSumProducer::endRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
- 
-// ------------ method called when starting to processes a luminosity block  ------------
-/*
-void
-L1TCaloEtSumProducer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
- 
-// ------------ method called when ending the processing of a luminosity block  ------------
-/*
-void
-L1TCaloEtSumProducer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
-
  
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
