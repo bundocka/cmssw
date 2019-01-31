@@ -159,7 +159,7 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     int towEtSumEtThresh_ = 0;
     int towEtEcalSumThresh_ = 0;
 
-    for (unsigned absieta=1; absieta<=(unsigned int)l1t::CaloTools::mpEta(l1t::CaloTools::kHFEnd); absieta++) {
+    for (unsigned absieta=1; absieta<=(unsigned int)l1t::CaloTools::mpEta(l1t::CaloTools::kP2nEtaTow); absieta++) {
 
       int ieta = etaSide * absieta;
       
@@ -173,43 +173,45 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	
 	l1t::CaloTower tower = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(ieta), iphi);
 
+	double towPt = tower.etEm() + tower.etHad();
 
 	// MET without HF
 
-	if (tower.hwPt()>towEtMetThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(metEtaMax_) && !metSat) {
+	if (towPt>towEtMetThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(metEtaMax_) && !metSat) {
 
 	  // x- and -y coefficients are truncated by after multiplication of Et by trig coefficient.
 	  // The trig coefficients themselves take values [-1023,1023] and so were scaled by
 	  // 2^10 = 1024, which requires bitwise shift to the right of the final value by 10 bits.
 	  // This is accounted for at ouput of demux (see Stage2Layer2DemuxSumsAlgoFirmwareImp1.cc)
-	  if(tower.hwPt() == l1t::CaloTools::kSatHcal || tower.hwPt() == l1t::CaloTools::kSatEcal || tower.hwPt() == l1t::CaloTools::kSatTower) metSat=true;
-	  ringEx += (int) (tower.hwPt() * l1t::CaloTools::cos_coeff[iphi - 1] );
-	  ringEy += (int) (tower.hwPt() * l1t::CaloTools::sin_coeff[iphi - 1] );	    
+	  if(towPt == l1t::CaloTools::kSatHcal || towPt == l1t::CaloTools::kSatEcal || towPt == l1t::CaloTools::kSatTower) metSat=true;
+	  ringEx += ( towPt * l1t::CaloTools::cos_coeff[iphi - 1] );
+	  ringEy += ( towPt * l1t::CaloTools::sin_coeff[iphi - 1] );
 	}
 
 	// MET *with* HF
-	if (tower.hwPt()>towEtMetThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(metEtaMaxHF_) && !metHFSat) {
-	  if(tower.hwPt() == l1t::CaloTools::kSatHcal || tower.hwPt() == l1t::CaloTools::kSatEcal || tower.hwPt() == l1t::CaloTools::kSatTower) metHFSat=true;
-	  ringExHF += (int) (tower.hwPt() * l1t::CaloTools::cos_coeff[iphi - 1] );
-	  ringEyHF += (int) (tower.hwPt() * l1t::CaloTools::sin_coeff[iphi - 1] );	    
+	if (towPt>towEtMetThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(metEtaMaxHF_) && !metHFSat) {
+	  if(towPt == l1t::CaloTools::kSatHcal || towPt == l1t::CaloTools::kSatEcal || towPt == l1t::CaloTools::kSatTower) metHFSat=true;
+	  ringExHF += ( towPt * l1t::CaloTools::cos_coeff[iphi - 1] );
+	  ringEyHF += ( towPt * l1t::CaloTools::sin_coeff[iphi - 1] );
 	}
 
 	// scalar sum
-	if (tower.hwPt()>towEtSumEtThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(ettEtaMax_) && !ettSat){
-	  if(tower.hwPt() == l1t::CaloTools::kSatHcal || tower.hwPt() == l1t::CaloTools::kSatEcal || tower.hwPt() == l1t::CaloTools::kSatTower) ettSat=true;
-	  ringEt += tower.hwPt();
+	if (towPt>towEtSumEtThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(ettEtaMax_) && !ettSat){
+	  if(towPt == l1t::CaloTools::kSatHcal || towPt == l1t::CaloTools::kSatEcal || towPt == l1t::CaloTools::kSatTower) ettSat=true;
+	  ringEt += towPt;
+	  //if(towPt>=1) std::cout << tower.hwEta() << "," << tower.hwPhi() << "\tP2 " << towPt << std::endl;
 	}
   
 	// scalar sum including HF
-	if (tower.hwPt()>towEtSumEtThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(ettEtaMaxHF_) && !ettHFSat) {
-	  if(tower.hwPt() == l1t::CaloTools::kSatHcal || tower.hwPt() == l1t::CaloTools::kSatEcal || tower.hwPt() == l1t::CaloTools::kSatTower) ettHFSat=true;
-	  ringEtHF += tower.hwPt();
+	if (towPt>towEtSumEtThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(ettEtaMaxHF_) && !ettHFSat) {
+	  if(towPt == l1t::CaloTools::kSatHcal || towPt == l1t::CaloTools::kSatEcal || towPt == l1t::CaloTools::kSatTower) ettHFSat=true;
+	  ringEtHF += towPt;
 	}
 	
         // scalar sum (EM)
-        if (tower.hwPt()>towEtEcalSumThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(ettEtaMax_) && !ecalEtSat){
-	  if(tower.hwPt() == l1t::CaloTools::kSatEcal || tower.hwPt() == l1t::CaloTools::kSatTower) ecalEtSat=true;
-          ringEtEm += tower.hwEtEm();
+        if (towPt>towEtEcalSumThresh_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=l1t::CaloTools::mpEta(ettEtaMax_) && !ecalEtSat){
+	  if(towPt == l1t::CaloTools::kSatEcal || towPt == l1t::CaloTools::kSatTower) ecalEtSat=true;
+          ringEtEm += tower.etEm();
 	}
 
 	// count HF tower HCAL flags
@@ -219,7 +221,7 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  ringMB0 += 1;
 	  
         // tower counting 
-	if (tower.hwPt()>nTowThresholdHw_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=nTowEtaMax_) 
+	if (towPt>nTowThresholdHw_ && l1t::CaloTools::mpEta(abs(tower.hwEta()))<=nTowEtaMax_)
 	  ringNtowers += 1;
       }    
       
@@ -299,7 +301,7 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   iEvent.put(std::move(etsums));
 
- 
+  //std::cout << "Total ET = " << et << ", METHF = " << metHF << std::endl;
 }
 
 
@@ -312,17 +314,21 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
   iEvent.getByToken(ecalColl_, ecalClusters);
 
   for(auto it = ecalClusters->begin(), end = ecalClusters->end(); it != end; ++it) {
-    if (it->e5x5() < ecalEtMin_) continue;
-    //if (it->e5x5() > 2) std::cout << "e5x5 = " << it->e5x5() << std::endl;
-    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->eta()), it->phi());
-    if(tow.hwPt()==0){
-      tow.setHwPt(it->e5x5());
-      tow.setHwEta(it->eta());
-      tow.setHwPhi(it->phi());
+    if (it->calibratedPt() <= 0.5) continue;
+    if (it->calibratedPt() < ecalEtMin_) continue;
+    //if(it->calibratedPt() > 2) std::cout << "calibratedPt = " << it->calibratedPt() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
+    int ieta = l1t::CaloTools::p2HwEta(it->eta());
+    int iphi = l1t::CaloTools::p2HwPhi(it->phi());
+    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, ieta , iphi);
+    if(tow.etEm()==0){
+      tow.setEtEm(it->calibratedPt());
+      tow.setHwEta(ieta);
+      tow.setHwPhi(iphi);
       towers_.push_back(tow);
     } else {
-      tow.setHwPt(it->e5x5()+tow.hwPt());
+      tow.setEtEm(it->calibratedPt()+tow.etEm());
     }
+    //if(it->calibratedPt() > 2) std::cout << "Tow EtEm = " << tow.etEm() << ", eta = " << tow.hwEta() << ", phi = " << tow.hwPhi() << std::endl;
   }
   
   // HCAL TPs
@@ -334,17 +340,18 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
       for (const auto & itr : *hcalTPs) {
 	HcalTrigTowerDetId id = itr.id();
 	double et = decoder_->hcaletValue(itr.id(), itr.t0());
-	//if (et > 2) std::cout << "HB Et = " << et << std::endl;
 	if (et <= 0) continue;
-	l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(id.ieta()), id.iphi());
-	if(tow.hwPt()==0){
-	  tow.setHwPt(et);
+	//if(et>2) std::cout << "HCAL TP Et = " << et << ", eta = " << id.ieta() << ", phi = " << id.iphi() << std::endl;
+	l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, id.ieta(), id.iphi());
+	if(tow.etHad()==0){
+	  tow.setEtHad(et);
 	  tow.setHwEta(id.ieta());
 	  tow.setHwPhi(id.iphi());
 	  towers_.push_back(tow);
 	} else {
-	  tow.setHwPt(et+tow.hwPt());
+	  tow.setEtHad(et+tow.etHad());
 	}
+	//if(et>2) std::cout << "Tow EtHad = " << tow.etHad() << ", eta = " << tow.hwEta() << ", phi = " << tow.hwPhi() << std::endl;
       }
     }
   } 
@@ -353,17 +360,24 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
   edm::Handle<l1t::HGCalTowerBxCollection> hgCalTowers;
   iEvent.getByToken(hgCalColl_, hgCalTowers);
   for(auto it = hgCalTowers->begin(), end = hgCalTowers->end(); it != end; ++it) {
-    if (it->etHad() > 2) std::cout << "HGC Had Et = " << it->etHad() << std::endl;
-    if (it->etEm() > 2) std::cout << "HGC Em Et = " << it->etEm() << std::endl;
-    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, l1t::CaloTools::caloEta(it->eta()), it->phi());
-    if(tow.hwPt()==0){
-      tow.setHwPt(it->etHad()+it->etEm());
-      tow.setHwEta(it->eta());
-      tow.setHwPhi(it->phi());
+    //if(it->etEm() > 2) std::cout << "HGC Had Et = " << it->etHad() << ", Em Et = " << it->etEm() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
+    //if(it->etHad() > 2) std::cout << "HGC Had Et = " << it->etHad() << ", Em Et = " << it->etEm() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
+    if(it->etEm() < 0.5 && it->etHad() < 0.5) continue;
+    int ieta = l1t::CaloTools::p2HwEta(it->eta());
+    int iphi = l1t::CaloTools::p2HwPhi(it->phi());
+    l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, ieta, iphi);
+    if(tow.etHad()==0 && tow.etEm()==0){
+      tow.setHwEta(ieta);
+      tow.setHwPhi(iphi);
+      tow.setEtHad(it->etHad());
+      tow.setEtEm(it->etEm());
       towers_.push_back(tow);
     } else {
-      tow.setHwPt(it->etHad()+it->etEm()+tow.hwPt());
+      tow.setEtHad(it->etHad()+tow.etHad());
+      tow.setEtEm(it->etEm()+tow.etEm());
     }
+    //if(it->etEm() > 2)  std::cout << "Tow EtHad = " << tow.etHad() << ", tow EtEm = " << tow.etEm() << ", eta = " << tow.hwEta() << ", phi = " << tow.hwPhi() << std::endl;
+    //if(it->etHad() > 2) std::cout << "Tow EtHad = " << tow.etHad() << ", tow EtEm = " << tow.etEm() << ", eta = " << tow.hwEta() << ", phi = " << tow.hwPhi() << std::endl;
   }
 
   
