@@ -14,6 +14,9 @@ const int64_t l1t::CaloTools::cos_coeff[72] = {1023, 1019, 1007, 988, 961, 927, 
 
 const int64_t l1t::CaloTools::sin_coeff[72] = {0, 89, 178, 265, 350, 432, 512, 587, 658, 723, 784, 838, 886, 927, 961, 988, 1007, 1019, 1023, 1019, 1007, 988, 961, 927, 886, 838, 784, 723, 658, 587, 512, 432, 350, 265, 178, 89, 0, -89, -178, -265, -350, -432, -512, -587, -658, -723, -784, -838, -886, -927, -961, -988, -1007, -1019, -1023, -1019, -1007, -988, -961, -927, -886, -838, -784, -723, -658, -587, -512, -432, -350, -265, -178, -89};
 
+const float l1t::CaloTools::p2EtaTowers[kP2nEtaTow] = {0,0.087,0.174,0.261,0.348,0.435,0.522,0.609,0.696,0.783,0.870,0.957,1.044,1.131,1.218,1.305,1.392,1.479,
+                                                                                 1.564,1.648,1.732,1.817,1.901,1.986,2.071,2.155,2.240,2.324,2.409,2.493,2.577,2.662,2.747,2.831,2.915,3.0,
+                                                                                 3.139,3.314,3.489,3.664,3.839,4.013,4.191,4.363,4.538,4.716,4.889,5.191};
 
 
 bool l1t::CaloTools::insertTower(std::vector<l1t::CaloTower>& towers, const l1t::CaloTower& tower) {
@@ -275,7 +278,22 @@ int l1t::CaloTools::gtPhi(int ieta, int iphi) {
 
 }
 
+int l1t::CaloTools::p2HwEta(float eta) {
 
+  int ieta = 0;
+  for(uint i=0; i<l1t::CaloTools::kP2nEtaTow-1; ++i){
+    if(abs(eta)<p2EtaTowers[i+1] && abs(eta) >= p2EtaTowers[i]){
+      ieta = i+1;
+    }
+  }
+  return ieta*(eta/abs(eta));
+}
+
+int l1t::CaloTools::p2HwPhi(float phi) {
+
+  int iphi = phi >= 0 ? (phi)*(72/(2*M_PI)) : (phi+(2*M_PI))*(72/(2*M_PI));
+  return iphi;
+}
 
 
 
