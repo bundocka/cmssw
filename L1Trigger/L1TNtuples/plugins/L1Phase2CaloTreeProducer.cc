@@ -116,7 +116,6 @@ L1Phase2CaloTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetu
 {
   
   l1Phase2Calo->Reset();
-
   edm::Handle<l1t::EtSumBxCollection> sums;
   
   iEvent.getByToken(sumToken_, sums);

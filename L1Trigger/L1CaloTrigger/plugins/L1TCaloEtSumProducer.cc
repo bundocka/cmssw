@@ -288,8 +288,8 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
   iEvent.getByToken(ecalColl_, ecalClusters);
 
   for(auto it = ecalClusters->begin(), end = ecalClusters->end(); it != end; ++it) {
-    if (it->calibratedPt() <= 0.5) continue;
-    if (it->calibratedPt() < ecalEtMin_) continue;
+    //if (it->calibratedPt() <= 0.5) continue;
+    //if (it->calibratedPt() < ecalEtMin_) continue;
     //if(it->calibratedPt() > 2) std::cout << "calibratedPt = " << it->calibratedPt() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
     int ieta = l1t::CaloTools::p2HwEta(it->eta());
     int iphi = l1t::CaloTools::p2HwPhi(it->phi());
@@ -336,7 +336,7 @@ L1TCaloEtSumProducer::buildTowers(edm::Event& iEvent, const edm::EventSetup& iSe
   for(auto it = hgCalTowers->begin(), end = hgCalTowers->end(); it != end; ++it) {
     //if(it->etEm() > 2) std::cout << "HGC Had Et = " << it->etHad() << ", Em Et = " << it->etEm() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
     //if(it->etHad() > 2) std::cout << "HGC Had Et = " << it->etHad() << ", Em Et = " << it->etEm() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
-    if(it->etEm() < 0.5 && it->etHad() < 0.5) continue;
+    //if(it->etEm() < 0.5 && it->etHad() < 0.5) continue;
     int ieta = l1t::CaloTools::p2HwEta(it->eta());
     int iphi = l1t::CaloTools::p2HwPhi(it->phi());
     l1t::CaloTower tow = l1t::CaloTools::getTower(towers_, ieta, iphi);

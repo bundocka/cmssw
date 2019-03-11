@@ -53,7 +53,7 @@ L1NtupleEMU = cms.Sequence(
 )
 
 
-if eras.Phase2_trigger.isChosen():
+if eras.Phase2C4_trigger.isChosen():
     l1Phase2CaloEmuTree = l1Phase2CaloTree.clone()
     l1Phase2CaloEmuTree.sumToken = cms.untracked.InputTag("L1TCaloEtSums")
     L1NtupleEMU += cms.Sequence(l1Phase2CaloEmuTree)

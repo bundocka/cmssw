@@ -30,5 +30,5 @@ from Configuration.Eras.Modifier_stage1L1Trigger_cff import stage1L1Trigger
 _stage1_L1NTupleRAW = L1NtupleRAW.copyAndExclude([l1CaloTowerTree,l1UpgradeTfMuonTree])
 stage1L1Trigger.toReplaceWith(L1NtupleRAW,_stage1_L1NTupleRAW)
 
-if eras.Phase2_trigger.isChosen():
+if eras.Phase2C4_trigger.isChosen():
     L1NtupleRAW += cms.Sequence(l1Phase2CaloTree)
