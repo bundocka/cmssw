@@ -22,6 +22,10 @@ const int l1t::CaloTools::emul_to_data_sum_index_map[31] = {
   25                                    // 30, 31
 };
 
+const float l1t::CaloTools::p2EtaTowers[kP2nEtaTow] = {0,0.087,0.174,0.261,0.348,0.435,0.522,0.609,0.696,0.783,0.870,0.957,1.044,1.131,1.218,1.305,1.392,1.479,
+                                                                                 1.564,1.648,1.732,1.817,1.901,1.986,2.071,2.155,2.240,2.324,2.409,2.493,2.577,2.662,2.747,2.831,2.915,3.0,
+                                                                                 3.139,3.314,3.489,3.664,3.839,4.013,4.191,4.363,4.538,4.716,4.889,5.191};
+
 
 bool l1t::CaloTools::insertTower(std::vector<l1t::CaloTower>& towers, const l1t::CaloTower& tower) {
   size_t towerIndex = CaloTools::caloTowerHash(tower.hwEta(), tower.hwPhi());
@@ -282,7 +286,22 @@ int l1t::CaloTools::gtPhi(int ieta, int iphi) {
 
 }
 
+int l1t::CaloTools::p2HwEta(float eta) {
 
+  int ieta = 0;
+  for(uint i=0; i<l1t::CaloTools::kP2nEtaTow-1; ++i){
+    if(abs(eta)<p2EtaTowers[i+1] && abs(eta) >= p2EtaTowers[i]){
+      ieta = i+1;
+    }
+  }
+  return ieta*(eta/abs(eta));
+}
+
+int l1t::CaloTools::p2HwPhi(float phi) {
+
+  int iphi = phi >= 0 ? (phi)*(72/(2*M_PI)) : (phi+(2*M_PI))*(72/(2*M_PI));
+  return iphi;
+}
 
 
 
@@ -495,6 +514,7 @@ unsigned int l1t::CaloTools::gloriousDivision( uint32_t aNumerator , uint32_t aD
 	    78,     78,     77,     77,     77,     76,     76,     76,     75,     75,     75,     74,     74,     74,     73,     73,
 	    73,     73,     72,     72,     72,     71,     71,     71,     70,     70,     70,     70,     69,     69,     69,     68,
 	    68,     68,     68,     67,     67,     67,     67,     66,     66,     66,     66,     65,     65,     65,     65,     64 };
+
 
 // Firmware uses 18bit integers - make sure we are in the same range
   aNumerator &= 0x3FFFF;
