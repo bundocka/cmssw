@@ -85,7 +85,7 @@ private:
   edm::EDGetTokenT<reco::GenMETCollection> genMETTrueToken_;
   edm::EDGetTokenT<reco::GenMETCollection> genMETCaloToken_;
   edm::EDGetTokenT<reco::GenParticleCollection> genParticleToken_;
-  edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupInfoToken_;
+  //  edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupInfoToken_;
   edm::EDGetTokenT<GenEventInfoProduct> genInfoToken_;
   edm::EDGetTokenT<edm::HepMCProduct> hepMCProductTag_;
 
@@ -100,7 +100,7 @@ L1GenTreeProducer::L1GenTreeProducer(const edm::ParameterSet& iConfig)
   genMETTrueToken_ = consumes<reco::GenMETCollection>(iConfig.getUntrackedParameter<edm::InputTag>("genMETTrueToken",edm::InputTag("genMetTrue")));
   genMETCaloToken_ = consumes<reco::GenMETCollection>(iConfig.getUntrackedParameter<edm::InputTag>("genMETCaloToken",edm::InputTag("genMetCalo")));
   genParticleToken_ = consumes<reco::GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("genParticleToken"));
-  pileupInfoToken_ = consumes<std::vector<PileupSummaryInfo> >(iConfig.getUntrackedParameter<edm::InputTag>("pileupInfoToken"));
+  //  pileupInfoToken_ = consumes<std::vector<PileupSummaryInfo> >(iConfig.getUntrackedParameter<edm::InputTag>("pileupInfoToken"));
   genInfoToken_ = consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("genInfoToken"));
   
   l1GenData_ = std::make_unique<L1Analysis::L1AnalysisGeneratorDataFormat>();
@@ -258,24 +258,24 @@ L1GenTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   }
 
 
-  edm::Handle<std::vector<PileupSummaryInfo>> puInfoCollection;
-  iEvent.getByToken(pileupInfoToken_, puInfoCollection);
+  //  edm::Handle<std::vector<PileupSummaryInfo>> puInfoCollection;
+  //  iEvent.getByToken(pileupInfoToken_, puInfoCollection);
 
-  if (!puInfoCollection.isValid()) {
-    throw cms::Exception("ProductNotValid") << "pileupInfoSource not valid";
-  }
+  //if (!puInfoCollection.isValid()) {
+  //   throw cms::Exception("ProductNotValid") << "pileupInfoSource not valid";
+  // }
 
   // Loop over vector, find in-time entry, then store the relevant info
-  std::vector<PileupSummaryInfo>::const_iterator puItr = puInfoCollection->begin();
-  std::vector<PileupSummaryInfo>::const_iterator puEnd = puInfoCollection->end();
-  for( ; puItr != puEnd; ++puItr) {
-    int bx = puItr->getBunchCrossing();
-    if (bx == 0) {
-      l1GenData_->nMeanPU = puItr->getTrueNumInteractions();
-      l1GenData_->nVtx    = puItr->getPU_NumInteractions();
-      break;
-    }
-  }
+  //std::vector<PileupSummaryInfo>::const_iterator puItr = puInfoCollection->begin();
+  //  std::vector<PileupSummaryInfo>::const_iterator puEnd = puInfoCollection->end();
+  // for( ; puItr != puEnd; ++puItr) {
+  //   int bx = puItr->getBunchCrossing();
+  //   if (bx == 0) {
+  //     l1GenData_->nMeanPU = puItr->getTrueNumInteractions();
+  //     l1GenData_->nVtx    = puItr->getPU_NumInteractions();
+  //     break;
+  //  }
+  //  }
 
   
 

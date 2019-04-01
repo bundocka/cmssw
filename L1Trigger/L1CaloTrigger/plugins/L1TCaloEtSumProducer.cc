@@ -79,7 +79,7 @@ L1TCaloEtSumProducer::L1TCaloEtSumProducer(const edm::ParameterSet& iConfig) :
   ecalColl_(consumes<l1slhc::L1EGCrystalClusterCollection>(iConfig.getParameter<edm::InputTag>("ecalColl"))),
   ecalEtMin_(iConfig.getParameter<double>("ecalEtMin")),
   hgCalColl_(consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("hgCalColl"))),
-  hgCalMClusts_(consumes<l1t::HGCalMulticlusterBxCollection>(iConfig.getParameter<edm::InputTag>("hgCalMClusts"))),
+  //hgCalMClusts_(consumes<l1t::HGCalMulticlusterBxCollection>(iConfig.getParameter<edm::InputTag>("hgCalMClusts"))),
   metEtaMax_(iConfig.getParameter<int>("metEtaMax")),
   metEtaMaxHF_(iConfig.getParameter<int>("metEtaMaxHF")),
   ettEtaMax_(iConfig.getParameter<int>("ettEtaMax")),
@@ -127,6 +127,9 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     ey += it->calibratedPt()*sin(it->phi());
     et += it->calibratedPt();
     etEm += it->calibratedPt();
+    exHF += it->calibratedPt()*cos(it->phi());
+    eyHF += it->calibratedPt()*sin(it->phi());
+    etHF += it->calibratedPt();
   }
   
   // HCAL TPs
@@ -146,6 +149,10 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  ex += tpEt*cos(tpPhi);
 	  ey += tpEt*sin(tpPhi);
 	  et += tpEt;
+	  exHF += tpEt*cos(tpPhi);
+	  eyHF += tpEt*sin(tpPhi);
+	  etHF += tpEt;
+	  
 	  //if(et>2) std::cout << "Tow EtHad = " << tow.etHad() << ", eta = " << tow.hwEta() << ", phi = " << tow.hwPhi() << std::endl;
 	}else{
 	  exHF += tpEt*cos(tpPhi);
@@ -169,28 +176,34 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //if(it->etEm() > 2) std::cout << "HGC Had Et = " << it->etHad() << ", Em Et = " << it->etEm() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
     //if(it->etHad() > 2) std::cout << "HGC Had Et = " << it->etHad() << ", Em Et = " << it->etEm() << ", eta = " << it->eta() << ", phi = " << it->phi() << std::endl;
     //if(it->etEm() < 0.5 && it->etHad() < 0.5) continue;
-    //double tpEt = it->etHad() + it->etEm();
-    //ex   += tpEt*cos(it->phi());
-    //ey   += tpEt*sin(it->phi());
-    //et   += tpEt;
-    //etEm += it->etEm();
+    double tpEt = it->etHad() + it->etEm();
+    ex   += tpEt*cos(it->phi());
+    ey   += tpEt*sin(it->phi());
+    et   += tpEt;
+    exHF   += tpEt*cos(it->phi());
+    eyHF   += tpEt*sin(it->phi());
+    etHF   += tpEt;
+    etEm += it->etEm();
     //if(it->etEm() > 2)  std::cout << "Tow EtHad = " << tow.etHad() << ", tow EtEm = " << tow.etEm() << ", eta = " << tow.hwEta() << ", phi = " << tow.hwPhi() << std::endl;
     //if(it->etHad() > 2) std::cout << "Tow EtHad = " << tow.etHad() << ", tow EtEm = " << tow.etEm() << ", eta = " << tow.hwEta() << ", phi = " << tow.hwPhi() << std::endl;
   }
  
 
   // HGCAL clusters
-  edm::Handle<l1t::HGCalMulticlusterBxCollection> multiclusters;
-  iEvent.getByToken(hgCalMClusts_, multiclusters);
+  //edm::Handle<l1t::HGCalMulticlusterBxCollection> multiclusters;
+  //iEvent.getByToken(hgCalMClusts_, multiclusters);
 
-  for(auto it = multiclusters->begin(0), ed = multiclusters->end(0); it != ed; ++it) {
-    float pt  = it->pt();
+  //for(auto it = multiclusters->begin(0), ed = multiclusters->end(0); it != ed; ++it) {
+  //  float pt  = it->pt();
   //  float hoe = it->hOverE();
-    ex   += pt*cos(it->phi());
-    ey   += pt*sin(it->phi());
-    et   += pt;
+    //ex   += pt*cos(it->phi());
+    //ey   += pt*sin(it->phi());
+    //et   += pt;
+    //exHF   += pt*cos(it->phi());
+    //eyHF   += pt*sin(it->phi());
+    //etHF   += pt;
     //  etEm += hoe == -1 ? 0 : pt /= 1 + hoe;
-  }
+  //}
    
 
 
@@ -237,7 +250,7 @@ L1TCaloEtSumProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   iEvent.put(std::move(etsums));
 
-  //std::cout << "Total ET = " << et << ", METHF = " << metHF << std::endl;
+  std::cout << "Total ET = " << et << ", METHF = " << metHF << std::endl;
 }
 
 
