@@ -156,6 +156,12 @@ phase2_SimL1Emulator += L1TkEGTaus
 phase2_SimL1Emulator += L1TkCaloTaus
 
 
+# Calo Et Sums
+# ########################################################################
+from L1Trigger.L1CaloTrigger.L1TCaloEtSumProducer_cfi import *
+phase2_SimL1Emulator += L1TCaloEtSums
+
+
 # PF Candidates
 # ########################################################################
 from L1Trigger.Phase2L1ParticleFlow.l1ParticleFlow_cff import *
