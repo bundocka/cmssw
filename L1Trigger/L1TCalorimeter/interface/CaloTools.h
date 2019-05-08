@@ -46,6 +46,8 @@ namespace l1t {
     static const int kNrTowers = ((kHFEnd-kHFBegin+1)*kHFNrPhi + kHBHEEnd*kHBHENrPhi )*2;
     static const int kNrHBHETowers = kHBHEEnd*kHBHENrPhi*2;
 
+    static const int kP2nEtaTow=48;
+
     // These are the saturation codes sent from Layer 1 as the tower pT to Layer 2
     // 509 = Layer 1 received saturated HCAL TP
     // 510 = Layer 1 received saturated ECAL TP
@@ -104,6 +106,9 @@ namespace l1t {
     // integer divide for HI asymmetry 
     static unsigned int gloriousDivision(uint32_t aNumerator, uint32_t aDenominator);
 
+    static int p2HwEta(float eta); // convert eta into phase 2 tower eta
+    static int p2HwPhi(float phi); // convert eta into phase 2 tower phi
+
     // conversion methods
     static math::PtEtaPhiMLorentzVector p4Demux(l1t::L1Candidate*);
     static l1t::EGamma egP4Demux(l1t::EGamma&);
@@ -122,6 +127,8 @@ namespace l1t {
 
     // mapping between sums in emulator and data
     static const int emul_to_data_sum_index_map[31];
+
+    static const float p2EtaTowers[kP2nEtaTow];
 
   private:
     // trigger tower eta boundaries
