@@ -71,7 +71,7 @@ private:
   // tree
   TTree * tree_;
 
-  edm::EDGetTokenT<edm::TriggerResults> hltSource_;
+  //edm::EDGetTokenT<edm::TriggerResults> hltSource_;
   
   // EDM input tags
   //edm::EDGetTokenT<l1t::EGammaBxCollection> egToken_;
@@ -82,7 +82,7 @@ private:
 
 L1EventTreeProducer::L1EventTreeProducer(const edm::ParameterSet& iConfig)
 {
-  hltSource_           = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("hltSource"));
+  //hltSource_           = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("hltSource"));
   
   std::string puMCFile   = iConfig.getUntrackedParameter<std::string>("puMCFile", "");
   std::string puMCHist   = iConfig.getUntrackedParameter<std::string>("puMCHist", "pileup");
@@ -121,11 +121,11 @@ L1EventTreeProducer::~L1EventTreeProducer()
 void
 L1EventTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  if(!hltSource_.isUninitialized()) {
-    l1Event->Reset();
-    l1Event->Set(iEvent,hltSource_);
-  }
-  tree_->Fill();
+  //if(!hltSource_.isUninitialized()) {
+  //  l1Event->Reset();
+  //  l1Event->Set(iEvent,hltSource_);
+  //}
+  //tree_->Fill();
 }
 
 // ------------ method called once each job just before starting event loop  ------------

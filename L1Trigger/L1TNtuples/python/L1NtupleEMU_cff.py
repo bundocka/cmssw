@@ -6,6 +6,7 @@ from L1Trigger.L1TNtuples.l1UpgradeTfMuonTree_cfi import *
 from L1Trigger.L1TNtuples.l1UpgradeTree_cfi import *
 from L1Trigger.L1TNtuples.l1EventTree_cfi import *
 from L1Trigger.L1TNtuples.l1uGTTree_cfi import *
+from L1Trigger.L1TNtuples.l1Phase2CaloTree_cfi import *
 
 l1UpgradeTfMuonEmuTree = l1UpgradeTfMuonTree.clone()
 l1UpgradeTfMuonEmuTree.bmtfMuonToken = cms.untracked.InputTag("simBmtfDigis","BMTF") 
@@ -49,3 +50,9 @@ L1NtupleEMU = cms.Sequence(
 #  +l1MuonEmuTree
   +l1uGTEmuTree
 )
+
+#if eras.Phase2C4_trigger.isChosen():
+l1Phase2CaloEmuTree = l1Phase2CaloTree.clone()
+l1Phase2CaloEmuTree.sumToken = cms.untracked.InputTag("L1TCaloEtSums")
+L1NtupleEMU += cms.Sequence(l1Phase2CaloEmuTree)
+

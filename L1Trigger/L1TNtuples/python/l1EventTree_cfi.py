@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 l1EventTree = cms.EDAnalyzer("L1EventTreeProducer",
-                             hltSource            = cms.InputTag("TriggerResults::HLT"),
+                             #hltSource            = cms.InputTag("TriggerResults::HLT"),
                              puMCFile             = cms.untracked.string(""),
                              puDataFile           = cms.untracked.string(""),
                              puMCHist             = cms.untracked.string(""),
