@@ -70,7 +70,7 @@ void l1t::Stage2MainProcessorFirmwareImp1::processEvent(const std::vector<l1t::C
   m_tauClusterAlgo->processEvent( outTowers, tauClusters );
   m_tauAlgo->processEvent( tauClusters,outTowers, mpTaus );
   m_jetAlgo->processEvent( outTowers, mpJets, mpAllJets );
-  m_sumAlgo->processEvent( outTowers, towerSums );
+  m_sumAlgo->processEvent( outTowers, mpAllJets, towerSums );
   m_jetSumAlgo->processEvent( mpAllJets, jetSums );
 
   clusters.insert( clusters.end(), egClusters.begin(), egClusters.end() );

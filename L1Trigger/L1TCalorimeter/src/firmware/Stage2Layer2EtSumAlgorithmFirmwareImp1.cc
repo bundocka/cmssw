@@ -28,6 +28,7 @@ l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::Stage2Layer2EtSumAlgorithmFirmwareI
 
 
 void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector<l1t::CaloTower> & towers,
+							       const std::vector<l1t::Jet> & alljets, 
                                                                std::vector<l1t::EtSum> & etsums) {
 
   unsigned int ntowers(0);
@@ -174,6 +175,15 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
 
       ntowers += ringNtowers;
     }
+    
+    for (unsigned jetIt=0; jetIt<alljets.size(); jetIt++) {
+      if((alljets.at(jetIt).hwEta()/abs(alljets.at(jetIt).hwEta())) == etaSide){
+    ex += (alljets.at(jetIt).hwPt() - alljets.at(jetIt).rawEt()) * CaloTools::cos_coeff[alljets.at(jetIt).hwPhi() - 1];
+    ey += (alljets.at(jetIt).hwPt() - alljets.at(jetIt).rawEt()) * CaloTools::sin_coeff[alljets.at(jetIt).hwPhi() - 1];
+    }
+    }
+
+
 
     if (mb0>0xf) mb0 = 0xf;
     if (mb1>0xf) mb1 = 0xf;
