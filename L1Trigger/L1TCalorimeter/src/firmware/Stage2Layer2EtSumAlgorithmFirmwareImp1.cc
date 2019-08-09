@@ -28,6 +28,7 @@ l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::Stage2Layer2EtSumAlgorithmFirmwareI
 
 
 void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector<l1t::CaloTower> & towers,
+							       const std::vector<l1t::Jet> & mpjets,
                                                                std::vector<l1t::EtSum> & etsums) {
 
   unsigned int ntowers(0);
@@ -44,7 +45,9 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
   for (int etaSide=1; etaSide>=-1; etaSide-=2) {
 
     int ex(0), ey(0), et(0);
+    int ext2(0), eyt2(0);
     int exHF(0), eyHF(0), etHF(0);
+    int exHFt2(0), eyHFt2(0);
     int etem(0);
     unsigned int mb0(0), mb1(0);
 
@@ -163,10 +166,14 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
       
       ex += ringEx;
       ey += ringEy;
+      ext2 += ringEx;
+      eyt2 += ringEy;
       et += ringEt;
       etHF += ringEtHF;
       exHF += ringExHF;
       eyHF += ringEyHF;
+      exHFt2 += ringExHF;
+      eyHFt2 += ringEyHF;
 
       etem  += ringEtEm;
 
@@ -174,6 +181,18 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
       mb1 += ringMB1;
 
       ntowers += ringNtowers;
+    }
+
+    for (unsigned jetIt=0; jetIt<mpjets.size(); jetIt++) {
+      if((mpjets.at(jetIt).hwEta()/abs(mpjets.at(jetIt).hwEta())) == etaSide){
+	if(abs(mpjets.at(jetIt).hwEta()) < 29){
+	  ext2 += ((mpjets.at(jetIt).hwPt() - mpjets.at(jetIt).rawEt()) * CaloTools::cos_coeff[mpjets.at(jetIt).hwPhi() - 1]);
+	  eyt2 += ((mpjets.at(jetIt).hwPt() - mpjets.at(jetIt).rawEt()) * CaloTools::sin_coeff[mpjets.at(jetIt).hwPhi() - 1]);
+	}
+	exHFt2 += ((mpjets.at(jetIt).hwPt() - mpjets.at(jetIt).rawEt()) * CaloTools::cos_coeff[mpjets.at(jetIt).hwPhi() - 1]);
+	eyHFt2 += ((mpjets.at(jetIt).hwPt() - mpjets.at(jetIt).rawEt()) * CaloTools::sin_coeff[mpjets.at(jetIt).hwPhi() - 1]);
+
+      }
     }
 
     if (mb0>0xf) mb0 = 0xf;
@@ -191,12 +210,12 @@ void l1t::Stage2Layer2EtSumAlgorithmFirmwareImp1::processEvent(const std::vector
     if(metHFSat || eyHF > 0x7fffffff) eyHF = 0x7fffffff;
     
     l1t::EtSum etSumTotalEt(p4,l1t::EtSum::EtSumType::kTotalEt,et,0,0,0);
-    l1t::EtSum etSumEx(p4,l1t::EtSum::EtSumType::kTotalEtx,ex,0,0,0);
-    l1t::EtSum etSumEy(p4,l1t::EtSum::EtSumType::kTotalEty,ey,0,0,0);
+    l1t::EtSum etSumEx(p4,l1t::EtSum::EtSumType::kTotalEtx,ext2,0,0,0);
+    l1t::EtSum etSumEy(p4,l1t::EtSum::EtSumType::kTotalEty,eyt2,0,0,0);
 
     l1t::EtSum etSumTotalEtHF(p4,l1t::EtSum::EtSumType::kTotalEtHF,etHF,0,0,0);
-    l1t::EtSum etSumExHF(p4,l1t::EtSum::EtSumType::kTotalEtxHF,exHF,0,0,0);
-    l1t::EtSum etSumEyHF(p4,l1t::EtSum::EtSumType::kTotalEtyHF,eyHF,0,0,0);
+    l1t::EtSum etSumExHF(p4,l1t::EtSum::EtSumType::kTotalEtxHF,exHFt2,0,0,0);
+    l1t::EtSum etSumEyHF(p4,l1t::EtSum::EtSumType::kTotalEtyHF,eyHFt2,0,0,0);
 
     l1t::EtSum etSumTotalEtEm(p4,l1t::EtSum::EtSumType::kTotalEtEm,etem,0,0,0);
 

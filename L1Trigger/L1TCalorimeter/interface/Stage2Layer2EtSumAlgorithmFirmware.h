@@ -24,6 +24,7 @@ namespace l1t {
     Stage2Layer2EtSumAlgorithmFirmwareImp1(CaloParamsHelper const* params);
     ~Stage2Layer2EtSumAlgorithmFirmwareImp1() override =default;
     void processEvent(const std::vector<l1t::CaloTower> & towers,
+		      const std::vector<l1t::Jet> & mpjets,
 			      std::vector<l1t::EtSum> & sums) override;
   private:
     CaloParamsHelper const* params_;
