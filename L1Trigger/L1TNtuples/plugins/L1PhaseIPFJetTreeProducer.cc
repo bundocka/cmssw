@@ -5,9 +5,9 @@
 // 
 /**\class L1PhaseIPFJetTreeProducer L1PhaseIPFJetTreeProducer.cc UserCode/L1TriggerDPG/src/L1PhaseIPFJetTreeProducer.cc
 
-Description: Produce L1 Extra tree
+   Description: Produce L1 Extra tree
 
-Implementation:
+   Implementation:
 
 */
 //
@@ -34,6 +34,7 @@ Implementation:
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
 #include "DataFormats/L1Trigger/interface/Jet.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
+#include "DataFormats/Phase2L1ParticleFlow/interface/PFJet.h"
 
 // ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -47,47 +48,49 @@ Implementation:
 //
 
 class L1PhaseIPFJetTreeProducer : public edm::EDAnalyzer {
-        public:
-                explicit L1PhaseIPFJetTreeProducer(const edm::ParameterSet&);
-                ~L1PhaseIPFJetTreeProducer();
+public:
+  explicit L1PhaseIPFJetTreeProducer(const edm::ParameterSet&);
+  ~L1PhaseIPFJetTreeProducer();
 
 
-        private:
-                virtual void beginJob(void) ;
-                virtual void analyze(const edm::Event&, const edm::EventSetup&);
-                virtual void endJob();
+private:
+  virtual void beginJob(void) ;
+  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  virtual void endJob();
 
-        public:
+public:
 
-                L1Analysis::L1AnalysisPhaseIPFJet* l1Extra;
-                L1Analysis::L1AnalysisPhaseIPFJetDataFormat * l1ExtraData;
+  L1Analysis::L1AnalysisPhaseIPFJet* l1Extra;
+  L1Analysis::L1AnalysisPhaseIPFJetDataFormat * l1ExtraData;
 
-        private:
+private:
 
-                unsigned maxL1Extra_;
+  unsigned maxL1Extra_;
 
-                // output file
-                edm::Service<TFileService> fs_;
+  // output file
+  edm::Service<TFileService> fs_;
 
-                // tree
-                TTree * tree_;
+  // tree
+  TTree * tree_;
 
-
-                edm::EDGetTokenT<std::vector<reco::CaloJet>> phaseIL1PFJets_;
+  edm::EDGetTokenT<std::vector<l1t::PFJet>> ak4L1PF_;
+  edm::EDGetTokenT<std::vector<reco::CaloJet>> phaseIL1PFJets_;
 
 };
 
 L1PhaseIPFJetTreeProducer::L1PhaseIPFJetTreeProducer(const edm::ParameterSet& iConfig){
-        phaseIL1PFJets_ = consumes<std::vector<reco::CaloJet> > (iConfig.getParameter<edm::InputTag>("l1PhaseIPFJets"));
+  
+  ak4L1PF_ = consumes<std::vector<l1t::PFJet> > (iConfig.getParameter<edm::InputTag>("ak4L1PF"));
+  phaseIL1PFJets_ = consumes<std::vector<reco::CaloJet> > (iConfig.getParameter<edm::InputTag>("l1PhaseIPFJets"));
+	
+  maxL1Extra_ = iConfig.getParameter<unsigned int>("maxL1Extra");
 
-        maxL1Extra_ = iConfig.getParameter<unsigned int>("maxL1Extra");
+  l1Extra     = new L1Analysis::L1AnalysisPhaseIPFJet();
+  l1ExtraData = l1Extra->getData();
 
-        l1Extra     = new L1Analysis::L1AnalysisPhaseIPFJet();
-        l1ExtraData = l1Extra->getData();
-
-        // set up output
-        tree_=fs_->make<TTree>("L1PhaseIPFJetTree", "L1PhaseIPFJetTree");
-        tree_->Branch("L1PhaseIPFJet", "L1Analysis::L1AnalysisPhaseIPFJetDataFormat", &l1ExtraData, 32000, 3);
+  // set up output
+  tree_=fs_->make<TTree>("L1PhaseIPFJetTree", "L1PhaseIPFJetTree");
+  tree_->Branch("L1PhaseIPFJet", "L1Analysis::L1AnalysisPhaseIPFJetDataFormat", &l1ExtraData, 32000, 3);
 
 }
 
@@ -95,8 +98,8 @@ L1PhaseIPFJetTreeProducer::L1PhaseIPFJetTreeProducer(const edm::ParameterSet& iC
 L1PhaseIPFJetTreeProducer::~L1PhaseIPFJetTreeProducer()
 {
 
-        // do anything here that needs to be done at desctruction time
-        // (e.g. close files, deallocate resources etc.)
+  // do anything here that needs to be done at desctruction time
+  // (e.g. close files, deallocate resources etc.)
 
 }
 
@@ -106,30 +109,42 @@ L1PhaseIPFJetTreeProducer::~L1PhaseIPFJetTreeProducer()
 //
 
 // ------------ method called to for each event  ------------
-        void
+void
 L1PhaseIPFJetTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
 
-        l1Extra->Reset();
+  l1Extra->Reset();
 
-        edm::Handle<std::vector<reco::CaloJet>> phaseIL1PFJets;
-        iEvent.getByToken(phaseIL1PFJets_,phaseIL1PFJets);
-        if (phaseIL1PFJets.isValid()){
-                l1Extra->SetPhaseIPFJet(phaseIL1PFJets, maxL1Extra_);
-        } else {
-                edm::LogWarning("MissingProduct") << "L1PhaseIPFJet PFJets not found. Branch will not be filled" << std::endl;
-        }
+  edm::Handle<std::vector<l1t::PFJet>> ak4L1PFs;
+  iEvent.getByToken(ak4L1PF_,ak4L1PFs);
 
 
+  if (ak4L1PFs.isValid()){
+    l1Extra->SetPFJet(ak4L1PFs, maxL1Extra_);
+  } else {
+    edm::LogWarning("MissingProduct") << "L1PhaseII PFJets not found. Branch will not be filled" << std::endl;
+  }
 
 
-        tree_->Fill();
+
+  edm::Handle<std::vector<reco::CaloJet>> phaseIL1PFJets;
+  iEvent.getByToken(phaseIL1PFJets_,phaseIL1PFJets);
+  if (phaseIL1PFJets.isValid()){
+    l1Extra->SetPhaseIPFJet(phaseIL1PFJets, maxL1Extra_);
+  } else {
+    edm::LogWarning("MissingProduct") << "L1PhaseIPFJet PFJets not found. Branch will not be filled" << std::endl;
+  }
+
+
+
+
+  tree_->Fill();
 
 }
 
 // ------------ method called once each job just before starting event loop  ------------
-        void 
+void 
 L1PhaseIPFJetTreeProducer::beginJob(void)
 {
 }

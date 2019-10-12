@@ -131,7 +131,7 @@ L1GenTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   // edm::Handle<GenEventInfoProduct> genInfo;
   // iEvent.getByToken(genInfoToken_, genInfo);
 
-  // l1GenData_->Reset();
+  l1GenData_->Reset();
 
   // if (genInfo.isValid()){
   //   l1GenData_->weight = genInfo->weight();
@@ -154,6 +154,7 @@ L1GenTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       l1GenData_->jetM.push_back( jetItr->mass() );
       l1GenData_->nJet++;
     }
+
 
   } else {
     edm::LogWarning("MissingProduct") << "Gen jets not found. Branch will not be filled" << std::endl;

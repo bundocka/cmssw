@@ -26,12 +26,23 @@ namespace L1Analysis
       phaseIPFJetEta.clear();
       phaseIPFJetPhi.clear();
 
+      nAK4PFJets = 0;
+      ak4PFJetEt.clear();
+      ak4PFJetEta.clear();
+      ak4PFJetPhi.clear();
+
     }
  
     unsigned short int nPhaseIPFJets;
     std::vector<double> phaseIPFJetEt;
     std::vector<double> phaseIPFJetEta;
     std::vector<double> phaseIPFJetPhi;
+
+    unsigned short int nAK4PFJets;
+    std::vector<double> ak4PFJetEt;
+    std::vector<double> ak4PFJetEta;
+    std::vector<double> ak4PFJetPhi;
+
 
 
   }; 

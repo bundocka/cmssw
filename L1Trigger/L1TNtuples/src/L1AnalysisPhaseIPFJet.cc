@@ -22,3 +22,15 @@ void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFJet(const edm::Handle< vector
     }
   }
 }
+
+void L1Analysis::L1AnalysisPhaseIPFJet::SetPFJet(const edm::Handle< vector<l1t::PFJet> > ak4PFJets, unsigned maxL1Extra)
+{
+  for (unsigned int i=0; i<ak4PFJets->size() && l1extra_.nPhaseIPFJets<maxL1Extra; i++){
+    if (ak4PFJets->at(i).pt()){
+      l1extra_.ak4PFJetEt .push_back(ak4PFJets->at(i).pt());
+      l1extra_.ak4PFJetEta.push_back(ak4PFJets->at(i).eta());
+      l1extra_.ak4PFJetPhi.push_back(ak4PFJets->at(i).phi());
+      l1extra_.nPhaseIPFJets++;
+    }
+  }
+}
