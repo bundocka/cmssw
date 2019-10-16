@@ -30,7 +30,7 @@ void L1Analysis::L1AnalysisPhaseIPFJet::SetPFJet(const edm::Handle< vector<l1t::
       l1extra_.ak4PFJetEt .push_back(ak4PFJets->at(i).pt());
       l1extra_.ak4PFJetEta.push_back(ak4PFJets->at(i).eta());
       l1extra_.ak4PFJetPhi.push_back(ak4PFJets->at(i).phi());
-      l1extra_.nPhaseIPFJets++;
+      l1extra_.nAK4PFJets++;
     }
   }
 }
