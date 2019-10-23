@@ -29,7 +29,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
 )
 
-fileList = FileUtils.loadListFromFile('ttbar.list')
+fileList = FileUtils.loadListFromFile('qcd.list')
 readFiles = cms.untracked.vstring(*fileList)
 
 process.source = process.source = cms.Source("PoolSource",
@@ -39,8 +39,13 @@ process.source = process.source = cms.Source("PoolSource",
 process.load('L1Trigger.L1CaloTrigger.Phase1L1TJets_cff')
 
 process.load('L1Trigger.Phase2L1ParticleFlow.l1pfJetMet_cff')
+process.l1PFJets.remove(process.ak4PFL1Calo)
+process.l1PFJets.remove(process.ak4PFL1PF)
+process.l1PFJets.remove(process.ak4PFL1CaloCorrected)
+process.l1PFJets.remove(process.ak4PFL1PFCorrected)
 
-process.load("L1Trigger.L1CaloTrigger.l1PhaseIPFJetTreeProducer_cfi")
+
+process.load("L1Trigger.L1TNtuples.l1PhaseIPFJetTreeProducer_cfi")
 
 
 process.TFileService = cms.Service("TFileService",
