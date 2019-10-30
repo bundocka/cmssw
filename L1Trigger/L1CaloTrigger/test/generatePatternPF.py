@@ -23,7 +23,7 @@ options.register('outDir',
                  VarParsing.VarParsing.varType.string,
                  "Output directory for buffer files")
 options.register('nPayloadFrames',
-                 13,
+                 17,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "N payload frames per event")

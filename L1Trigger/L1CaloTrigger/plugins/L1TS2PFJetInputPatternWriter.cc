@@ -46,7 +46,7 @@ public:
   ~L1TS2PFJetInputPatternWriter() override;
   
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-  
+  uint64_t convertEtaOrPhi(double etaOrPhi, double centre);
   
 private:
   void beginJob() override;
@@ -73,9 +73,9 @@ private:
   unsigned nFrame_;
   unsigned nFrameFile_;
   unsigned nEvents_;
+  unsigned nFramesPerFile_;
   float    ptLSB_;
-  float    phiLSB_;
-  float    etaLSB_;
+  float    etaPhiLSB_;
   
   // data arranged by link and frame
   std::vector< std::vector<uint64_t> > data_;
@@ -111,8 +111,7 @@ L1TS2PFJetInputPatternWriter::L1TS2PFJetInputPatternWriter(const edm::ParameterS
   nChan_ = 4;
   nQuad_ = 18;
   ptLSB_ = 0.25;
-  etaLSB_ = 0.0043633231;
-  phiLSB_ = 0.0043633231;
+  etaPhiLSB_ = 0.0043633231;
 
   nHeaderFrames_ = iConfig.getUntrackedParameter<unsigned>("nHeaderFrames");
   nPayloadFrames_ = iConfig.getUntrackedParameter<unsigned>("nPayloadFrames");
@@ -120,6 +119,7 @@ L1TS2PFJetInputPatternWriter::L1TS2PFJetInputPatternWriter(const edm::ParameterS
   nFrame_ = 0;
   nFrameFile_ = 0;
   nEvents_ = 0;
+  nFramesPerFile_ = 1006;
 
   nLink_ = nChan_ * nQuad_;
   data_.resize(nLink_);
@@ -146,7 +146,7 @@ void
 L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
-  
+
   //count events
   nEvents_++;
 
@@ -169,7 +169,7 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
 
   if(nFrame_ == 0 || nFrameFile_ == 0){
     //first empty frames
-    while(nFrameFile_ < 14){
+    while(nFrameFile_ < 3){
       dataValid_.push_back( 1 );
       for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
 	for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
@@ -198,21 +198,21 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
 
 	uint64_t data=0;     
 
-	if((nFrameFile_%13) == 1 ){
+	if((nFrameFile_%17) == 3){
 	  if(iLink < 24 && pfPartsA.size() > iLink){
-	    data |= ((uint64_t)floor(pfPartsA.at(iLink).pt()  / ptLSB_ )     & 0xffff);
-	    data |= ((uint64_t)floor(pfPartsA.at(iLink).phi() / phiLSB_)     & 0x3ff)  << 16;
-	    data |= ((uint64_t)floor(pfPartsA.at(iLink).eta() / etaLSB_)     & 0x3ff)  << 26;
+	    data |= ((uint64_t)floor(pfPartsA.at(iLink).pt()  / ptLSB_ )     & 0xffff) << 32;
+	    data |= convertEtaOrPhi(pfPartsA.at(iLink).eta(), 0.375);
+	    data |= convertEtaOrPhi(pfPartsA.at(iLink).phi(), 0.35)  << 10;
 	    //std::cout << std::fixed << std::setprecision(2) << pfPartsA.at(iLink).pt() << "\t" <<  
 	    // pfPartsA.at(iLink).eta() << "\t" << pfPartsA.at(iLink).phi() << std::endl;
 
 	  }
 	}
-	if((nFrameFile_%13) == 2 ){ 
+	if((nFrameFile_%17) == 5){
 	  if(iLink < 24 && pfPartsB.size() > iLink){
-	    data |= ((uint64_t)floor(pfPartsB.at(iLink).pt()  / ptLSB_ )     & 0xffff);
-	    data |= ((uint64_t)floor(pfPartsB.at(iLink).phi() / phiLSB_)     & 0x3ff)  << 16;
-	    data |= ((uint64_t)floor((pfPartsB.at(iLink).eta()-0.75) / etaLSB_)     & 0x3ff)  << 26;
+	    data |= ((uint64_t)floor(pfPartsB.at(iLink).pt()  / ptLSB_ )     & 0xffff) << 32;
+	    data |= convertEtaOrPhi(pfPartsB.at(iLink).eta(), 1.125);
+	    data |= convertEtaOrPhi(pfPartsB.at(iLink).phi(), 0.35)  << 10;
 	    //std::cout << std::fixed << std::setprecision(2) << pfPartsB.at(iLink).pt() << "\t" <<  
 	    //  pfPartsB.at(iLink).eta() << "\t" << pfPartsB.at(iLink).phi() << std::endl;
 	  }
@@ -221,10 +221,31 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
 	data_.at(iLink).push_back( data );
       }
     }
-    nFrame_++;
-    nFrameFile_++;
-    if(nFrame_%1015==0) nFrameFile_ = 0;
+    nFrame_+=1;
+    nFrameFile_+=1;
+    if(nFrame_%nFramesPerFile_ == 0) nFrameFile_ = 0;
   }
+}
+
+uint64_t
+  L1TS2PFJetInputPatternWriter::convertEtaOrPhi(double etaOrPhi, double centre){
+
+  int sign = (etaOrPhi-centre)/abs(etaOrPhi-centre);
+  uint64_t ietaOrPhi = (uint64_t)floor((abs(etaOrPhi-centre)/etaPhiLSB_));
+  //double etaOrPhiRe = ((ietaOrPhi*etaPhiLSB_)*sign)+centre;
+
+
+  if(sign<0){
+    ietaOrPhi = (~ietaOrPhi & 0x3ff) +1;//1024-ietaOrPhi;//(~ietaOrPhi & 0x3ff) +1;
+    //etaOrPhiRe = (((~(ietaOrPhi-1) & 0x3ff) * etaPhiLSB_)*sign)+centre;//(((1024-ietaOrPhi)*etaPhiLSB_)*sign)+centre;//(((~(ietaOrPhi-1) & 0x1ff) * etaPhiLSB_)*sign)+centre;
+  }
+
+  //std::cout << "etaOrPhi = " << etaOrPhi << ", rel etaOrPhi = " << etaOrPhi - centre << std::endl;
+  //std::cout << "etaOrPhiRe = " << etaOrPhiRe << ", rel etaOrPhiRe = " << etaOrPhiRe - centre << std::endl;
+
+
+  return ietaOrPhi;
+
 }
 
 
@@ -244,11 +265,8 @@ L1TS2PFJetInputPatternWriter::endJob()
   //frames per event
   unsigned int framesPerEv = nHeaderFrames_ + nPayloadFrames_ + nClearFrames_;
 
-  //frames per file
-  unsigned int framesPerFile = 1015;
-
   //events per file
-  unsigned int evPerFile = floor(framesPerFile/framesPerEv);
+  unsigned int evPerFile = floor(nFramesPerFile_/framesPerEv);
 
   //number of output files
   unsigned int nOutFiles = ceil((float)nEvents_/(float)evPerFile);
@@ -292,7 +310,7 @@ L1TS2PFJetInputPatternWriter::endJob()
 
     // then the data
     unsigned iFileFrame=0;
-    for ( unsigned iFrame=itFile*framesPerFile; iFrame<(itFile*framesPerFile+framesPerFile); ++iFrame ) {
+    for ( unsigned iFrame=itFile*nFramesPerFile_; iFrame<(itFile*nFramesPerFile_+  nFramesPerFile_); ++iFrame ) {
       if( iFrame <= nFrame_  && iFrame < (framesPerEv*nEvents_)){
 	outFiles[itFile] << "Frame " << std::dec << std::setw(4) << std::setfill('0') << iFileFrame << " : ";
 	for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
