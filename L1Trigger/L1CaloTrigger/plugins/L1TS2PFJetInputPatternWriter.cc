@@ -119,7 +119,7 @@ L1TS2PFJetInputPatternWriter::L1TS2PFJetInputPatternWriter(const edm::ParameterS
   nFrame_ = 0;
   nFrameFile_ = 0;
   nEvents_ = 0;
-  nFramesPerFile_ = 1006;
+  nFramesPerFile_ = 977;
 
   nLink_ = nChan_ * nQuad_;
   data_.resize(nLink_);
@@ -166,16 +166,20 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
 
   if(pfPartsA.size()==0 && pfPartsB.size()==0)
     return;
+  
 
   if(nFrame_ == 0 || nFrameFile_ == 0){
     //first empty frames
-    while(nFrameFile_ < 3){
-      dataValid_.push_back( 1 );
+    while(nFrameFile_ < 8){
+      if(nFrameFile_ > 4)
+	dataValid_.push_back( 1 );
+      else
+	dataValid_.push_back( 0 );
       for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
 	for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
 	  uint iLink = (iQuad*nChan_)+iChan;
-	  if(iLink==0)
-	    data_.at(iLink).push_back(0);
+	  if(iLink==0 and nFrameFile_ == 5)
+	    data_.at(iLink).push_back(5839227683695833246);
 	  else
 	    data_.at(iLink).push_back(0);
 	  continue;
@@ -183,8 +187,8 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
       }
       nFrame_++;
       nFrameFile_++;
-    }
-  }
+    }    
+  }  
 
   // loop over frames
   for ( unsigned iFrame=0; iFrame<nPayloadFrames_; ++iFrame ) {
@@ -198,7 +202,7 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
 
 	uint64_t data=0;     
 
-	if((nFrameFile_%17) == 3){
+	if((nFrameFile_%17) == 8){
 	  if(iLink < 24 && pfPartsA.size() > iLink){
 	    data |= ((uint64_t)floor(pfPartsA.at(iLink).pt()  / ptLSB_ )     & 0xffff) << 32;
 	    data |= convertEtaOrPhi(pfPartsA.at(iLink).eta(), 0.375);
@@ -208,7 +212,7 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
 
 	  }
 	}
-	if((nFrameFile_%17) == 5){
+	if((nFrameFile_%17) == 10){
 	  if(iLink < 24 && pfPartsB.size() > iLink){
 	    data |= ((uint64_t)floor(pfPartsB.at(iLink).pt()  / ptLSB_ )     & 0xffff) << 32;
 	    data |= convertEtaOrPhi(pfPartsB.at(iLink).eta(), 1.125);

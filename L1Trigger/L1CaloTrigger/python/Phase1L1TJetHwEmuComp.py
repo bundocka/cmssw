@@ -22,9 +22,8 @@ nHw = 0
 nEm = 0
 nEvNoZ = 0
 nPayloadFrames = 17
-packet1st = 7
-packet3rd = packet1st + 2*nPayloadFrames
-nTxFiles = 151
+frameStart = 46
+nTxFiles = 1
 nLinks = 25
 dR = 0.01
 
@@ -34,9 +33,9 @@ for hwTx in range(0,nTxFiles):
         for line in inFile:
             if('1v' in line):
                 frameIt += 1
-                if frameIt < packet1st:
+                if frameIt > 977+frameStart:
                     continue
-                if hwTx == 0 and frameIt < packet3rd:
+                if frameIt < frameStart:
                     continue
                 linkData = line.split('1v')
                 for wordIt in range(1,nLinks):
@@ -52,7 +51,7 @@ for hwTx in range(0,nTxFiles):
                                ((((int(word[:8],16)>>16)&0xff)*20)+10)*phiLSB]
                         hwJets.append(jet)
 
-                if (frameIt%17) == packet1st-1:
+                if (frameIt%17) == (frameStart%17)-1:
                     nHw+=1
                     if len(hwJets)==0:
                         hwJets.append([0,0,0])
