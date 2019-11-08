@@ -164,8 +164,8 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
       pfPartsB.push_back(*pfIt);
   }
 
-  if(pfPartsA.size()==0 && pfPartsB.size()==0)
-    return;
+  //if(pfPartsA.size()==0 && pfPartsB.size()==0)
+  //  return;
   
 
   if(nFrame_ == 0 || nFrameFile_ == 0){
@@ -178,7 +178,7 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
       for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
 	for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
 	  uint iLink = (iQuad*nChan_)+iChan;
-	  if(iLink==0 and nFrameFile_ == 5)
+	  if(iLink==40 and nFrameFile_ == 5)
 	    data_.at(iLink).push_back(5839227683695833246);
 	  else
 	    data_.at(iLink).push_back(0);
@@ -203,20 +203,20 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
 	uint64_t data=0;     
 
 	if((nFrameFile_%17) == 8){
-	  if(iLink < 24 && pfPartsA.size() > iLink){
-	    data |= ((uint64_t)floor(pfPartsA.at(iLink).pt()  / ptLSB_ )     & 0xffff) << 32;
-	    data |= convertEtaOrPhi(pfPartsA.at(iLink).eta(), 0.375);
-	    data |= convertEtaOrPhi(pfPartsA.at(iLink).phi(), 0.35)  << 10;
+	  if(iLink > 39 && pfPartsA.size() > (iLink-40)){
+	    data |= ((uint64_t)floor(pfPartsA.at(iLink-40).pt()  / ptLSB_ )     & 0xffff) << 32;
+	    data |= convertEtaOrPhi(pfPartsA.at(iLink-40).eta(), 0.375);
+	    data |= convertEtaOrPhi(pfPartsA.at(iLink-40).phi(), 0.35)  << 10;
 	    //std::cout << std::fixed << std::setprecision(2) << pfPartsA.at(iLink).pt() << "\t" <<  
 	    // pfPartsA.at(iLink).eta() << "\t" << pfPartsA.at(iLink).phi() << std::endl;
 
 	  }
 	}
 	if((nFrameFile_%17) == 10){
-	  if(iLink < 24 && pfPartsB.size() > iLink){
-	    data |= ((uint64_t)floor(pfPartsB.at(iLink).pt()  / ptLSB_ )     & 0xffff) << 32;
-	    data |= convertEtaOrPhi(pfPartsB.at(iLink).eta(), 1.125);
-	    data |= convertEtaOrPhi(pfPartsB.at(iLink).phi(), 0.35)  << 10;
+	  if(iLink > 39 && pfPartsB.size() > (iLink-40)){
+	    data |= ((uint64_t)floor(pfPartsB.at(iLink-40).pt()  / ptLSB_ )     & 0xffff) << 32;
+	    data |= convertEtaOrPhi(pfPartsB.at(iLink-40).eta(), 1.125);
+	    data |= convertEtaOrPhi(pfPartsB.at(iLink-40).phi(), 0.35)  << 10;
 	    //std::cout << std::fixed << std::setprecision(2) << pfPartsB.at(iLink).pt() << "\t" <<  
 	    //  pfPartsB.at(iLink).eta() << "\t" << pfPartsB.at(iLink).phi() << std::endl;
 	  }

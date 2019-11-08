@@ -353,13 +353,14 @@ std::vector<reco::CaloJet> Phase1L1TJetProducer::_buildJetsFromSeeds(const TH2F 
   {
     reco::CaloJet jet = this -> _buildJetFromSeed(caloGrid, seed);
     jets.push_back(jet);
-    //if(caloGrid.GetEntries() > 0)
-    //  std::cout << std::fixed << std::setprecision(2) << jet.pt() << "\t" <<  
-    //	jet.eta() << "\t" << jet.phi() << std::endl;
+    if(caloGrid.GetEntries() > 0)
+      std::cout << std::fixed << std::setprecision(2) << jet.pt() << "\t" <<
+	jet.eta() << "\t" << jet.phi() << std::endl;
     
   }
-  //if(caloGrid.GetEntries() > 0 && jets.size() == 0) std::cout << "0\t0\t0" << std::endl;
-  //if(caloGrid.GetEntries() > 0) std::cout << " " << std::endl;
+  if(caloGrid.GetEntries() > 0 && jets.size() == 0) std::cout << "0\t0\t0" << std::endl;
+  if(caloGrid.GetEntries() > 0) std::cout << " " << std::endl;
+
   return jets;
 }
 
@@ -370,8 +371,10 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
   //Filling the calo grid with the primitives
   for (auto primitiveIterator = triggerPrimitives.begin(); primitiveIterator != triggerPrimitives.end(); primitiveIterator++)
     {
-      //if(primitiveIterator->eta() >= 0 && primitiveIterator->eta() < 1.5 && primitiveIterator->phi() >= 0 && primitiveIterator->phi() < 0.7)
-      caloGrid.Fill((float) primitiveIterator -> eta(), (float) primitiveIterator -> phi(), (float) primitiveIterator -> pt());
+      //std::cout << "PF " << (float) primitiveIterator -> pt() << ", eta " << primitiveIterator -> eta() << ", phi = " << (float) primitiveIterator -> phi() << std::endl;
+      if(primitiveIterator->eta() >= 0 && primitiveIterator->eta() < 1.5 && primitiveIterator->phi() >= 0 && primitiveIterator->phi() < 0.7){
+	caloGrid.Fill((float) primitiveIterator -> eta(), (float) primitiveIterator -> phi(), (float) primitiveIterator -> pt());
+      }
     }
   return;
 }

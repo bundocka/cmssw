@@ -103,10 +103,10 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = readFiles,
-#                            fileNames = cms.untracked.vstring(options.inputFiles)
-#        '/store/relval/CMSSW_7_4_0/RelValSingleElectronPt35_UP15/GEN-SIM-DIGI-RAW-HLTDEBUG/MCRUN2_74_V7_GENSIM_7_1_15-v1/00000/1E628CEB-7ADD-E411-ACF3-0025905A609E.root'
-#        )
+#    fileNames = readFiles,
+  fileNames = cms.untracked.vstring(
+    "file://pfEDM.root",
+  )
 )
 
 process.options = cms.untracked.PSet(

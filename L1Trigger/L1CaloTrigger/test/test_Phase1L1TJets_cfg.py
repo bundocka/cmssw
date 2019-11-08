@@ -7,16 +7,16 @@ process = cms.Process("TEST")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(15000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(60) )
 
 fileList = FileUtils.loadListFromFile('ttbar.list')
 readFiles = cms.untracked.vstring(*fileList)
 
 process.source = process.source = cms.Source("PoolSource",
-  fileNames = readFiles,
-  #fileNames = cms.untracked.vstring(
-  #  "file:pf500.root",
-  #)
+#  fileNames = readFiles,
+  fileNames = cms.untracked.vstring(
+    "file://pfEDM.root",
+  )
 )
 
 process.load('L1Trigger.L1CaloTrigger.Phase1L1TJets_cff')
