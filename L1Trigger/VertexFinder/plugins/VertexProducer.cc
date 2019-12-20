@@ -13,8 +13,11 @@
 
 #include "L1Trigger/VertexFinder/interface/RecoVertexWithTP.h"
 
+#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
+
 using namespace l1tVertexFinder;
 using namespace std;
+
 
 VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
   l1TracksToken_(consumes<TTTrackCollectionView>(iConfig.getParameter<edm::InputTag>("l1TracksInputTag"))),
@@ -53,8 +56,15 @@ VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
   //--- Define EDM output to be written to file (if required)
   produces<l1t::VertexCollection>("l1vertices");
   produces<l1t::VertexCollection>("l1vertextdr");
-}
 
+  if(settings_.vx_cnn_trk_assoc()){
+    std::cout << "loading graph from " << settings_.vx_cnn_graph() << std::endl;
+    // load the graph
+    cnnGraph_ = tensorflow::loadGraphDef(settings_.vx_cnn_graph());
+    // create a new session and add the graphDef
+    cnnSesh_ = tensorflow::createSession(cnnGraph_);
+  }
+}
 
 void VertexProducer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup)
 {
@@ -128,14 +138,32 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::unique_ptr<l1t::VertexCollection> lProductTDR(new std::vector<l1t::Vertex>());
   std::vector<edm::Ptr<l1t::Vertex::Track_t>> lVtxTracksTDR;
   lVtxTracksTDR.reserve(vf.TDRPrimaryVertex().tracks().size());
-  for (const auto& t : vf.TDRPrimaryVertex().tracks())
-    lVtxTracksTDR.emplace_back(t->getTTTrackPtr());
+  // use normal tracks or cnn tracks
+  if(settings_.vx_cnn_trk_assoc()){
+    std::vector<const L1Track*> cnnPVTracks;
+    vf.cnnTrkAssociation(vf.TDRPrimaryVertex().z0(), cnnPVTracks, cnnSesh_);
+    for (const auto& t : cnnPVTracks)
+      lVtxTracksTDR.emplace_back(t->getTTTrackPtr());
+  } else {
+    for (const auto& t : vf.TDRPrimaryVertex().tracks())
+      lVtxTracksTDR.emplace_back(t->getTTTrackPtr());
+  }
   lProductTDR->emplace_back(l1t::Vertex(vf.TDRPrimaryVertex().z0(), lVtxTracksTDR));
   iEvent.put(std::move(lProductTDR), "l1vertextdr");
 }
 
 void VertexProducer::endJob()
 {
+
+  if(settings_.vx_cnn_trk_assoc()){
+    // close the session
+    tensorflow::closeSession(cnnSesh_);
+    cnnSesh_ = nullptr;
+
+    // delete the graph
+    delete cnnGraph_;
+    cnnGraph_ = nullptr;
+  }
 }
 
 DEFINE_FWK_MODULE(VertexProducer);

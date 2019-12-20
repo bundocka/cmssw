@@ -31,7 +31,10 @@ VertexProducer = cms.EDProducer('VertexProducer',
         DBSCANPtThreshold = cms.double(4.),
         # DBSCAN min density tracks
         DBSCANMinDensityTracks = cms.uint32(2),
-        VxMinTrackPt   = cms.double(2.5)
+        VxMinTrackPt   = cms.double(2.5),
+        # Associated tracks to vertex with CNN
+        DoCNNTrackAssociation = cms.bool(False),
+        CNNGraph = cms.string("L1Trigger/VertexFinder/data/cnnTrkAssoc.pb")
     ),
   # Debug printout
   Debug  = cms.uint32(0), #(0=none, 1=print tracks/sec, 2=show filled cells in HT array in each sector of each event, 3=print all HT cells each TP is found in, to look for duplicates, 4=print missed tracking particles by r-z filters, 5 = show debug info about duplicate track removal, 6 = show debug info about fitters)

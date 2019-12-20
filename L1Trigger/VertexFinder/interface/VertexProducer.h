@@ -14,6 +14,8 @@
 
 #include "L1Trigger/VertexFinder/interface/AlgoSettings.h"
 
+#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
+
 
 namespace l1tVertexFinder {
 class AlgoSettings;
@@ -34,6 +36,8 @@ private:
 
 private:
   const edm::EDGetTokenT<TTTrackCollectionView> l1TracksToken_;
+  tensorflow::GraphDef* cnnGraph_;
+  tensorflow::Session* cnnSesh_;
 
   l1tVertexFinder::AlgoSettings settings_;
 };

@@ -4,7 +4,7 @@
 
 #include "L1Trigger/VertexFinder/interface/AlgoSettings.h"
 
-
+#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 
 using namespace std;
 
@@ -464,5 +464,55 @@ void VertexFinder::TDRalgorithm()
     }
   }
 } // end of TDRalgorithm
+
+
+void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*> cnnPVTracks, tensorflow::Session* cnnSesh)
+{
+
+  // define a tensor and fill it with track parameters
+  tensorflow::Tensor input(tensorflow::DT_FLOAT, { 250, 1, 10 });
+
+  // loop over tracks
+  uint trackIt(0);
+  for (const L1Track* track : fitTracks_) {
+    // track input parameters are z0, 1/pt, eta, chi2, dz
+    input.tensor<float, 3>()(trackIt, 0, 0) = float(track->z0());
+    input.tensor<float, 3>()(trackIt, 0, 1) = float((track->pt() < 500 && track->pt() > 0) ? 1/track->pt() : 0);
+    input.tensor<float, 3>()(trackIt, 0, 2) = float(abs(track->eta()));
+    input.tensor<float, 3>()(trackIt, 0, 3) = float(track->chi2dof());
+    input.tensor<float, 3>()(trackIt, 0, 4) = float(abs(track->z0() - z0));
+    //pad empty parameters with zeroes
+    for(uint i=5; i<10; i++)
+      input.tensor<float, 3>()(trackIt, 0, i) = float(0);
+    trackIt++;
+  }
+
+  //pad empty tracks with zeros
+  if(trackIt<250){
+    for(uint i=trackIt; i<250; i++){
+      for(uint j=0; j<10; j++){
+	input.tensor<float, 3>()(i, 0, j) = float(0);
+      }
+    }
+  }
+
+  // cnn output: track probabilities, 0 PU, 1 PV
+  std::vector<tensorflow::Tensor> outputs;
+
+  tensorflow::run(cnnSesh, { { "input_1", input } }, { "CNNoutput/Sigmoid" }, &outputs);
+
+  trackIt = 0;
+  // loop over tracks and keep tracks above
+  //configurable probability to be from PV
+  for (const L1Track* track : fitTracks_) {
+    if(outputs[0].tensor<float, 3>()(trackIt, 0, 0) > 0.8)
+      cnnPVTracks.push_back(track);
+    trackIt++;
+  }
+
+} // end of cnnAssociation
+
+
+
 
 } // end ns l1tVertexFinder
