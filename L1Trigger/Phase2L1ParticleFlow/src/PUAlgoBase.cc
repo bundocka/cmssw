@@ -1,4 +1,5 @@
 #include "L1Trigger/Phase2L1ParticleFlow/interface/PUAlgoBase.h"
+#include "DataFormats/Phase2L1ParticleFlow/interface/PFCandidate.h"
 
 #include <TH1F.h>
 
@@ -25,11 +26,11 @@ void PUAlgoBase::runChargedPV(Region &r, float z0) const {
     }
 }
 
-void PUAlgoBase::doVertexing(std::vector<Region> &rs, VertexAlgo algo, float &pvdz) const {
+void PUAlgoBase::doVertexing(std::vector<Region> &rs, VertexAlgo algo, float& pvdz, l1t::Vertex& pv) const {
     int lNBins = int(40./vtxRes_);
     if (algo == TPVtxAlgo) lNBins *= 3;
     std::unique_ptr<TH1F> h_dz(new TH1F("h_dz","h_dz",lNBins,-20,20));
-    if (algo != ExternalVtxAlgo) {
+    if (algo != ExternalVtxAlgo && algo != ExternalCNNVtxAlgo) {
       for (const Region & r : rs) {
         for (const PropagatedTrack & p : r.track) {
             if (rs.size() > 1) {
@@ -41,6 +42,25 @@ void PUAlgoBase::doVertexing(std::vector<Region> &rs, VertexAlgo algo, float &pv
     }
     switch(algo) {
         case ExternalVtxAlgo: break;
+        case ExternalCNNVtxAlgo: {
+
+	  uint matchedTracks=0;
+	  uint nPFTrk=0;
+	  uint nCNNTrk=0;
+	  for (Region & r : rs) {
+	    for (PropagatedTrack & p : r.track) {
+	      nPFTrk++;
+	      for (const auto & t : pv.tracks()) {
+		if(nPFTrk==1) nCNNTrk++;
+		if (t->isTheSameAs(*p.src->track().get())){
+		  p.fromPV = true;
+		  matchedTracks++;
+		}
+	      }
+	    }
+	  }
+	  return;
+	}
         case OldVtxAlgo: {
                              int imaxbin = h_dz->GetMaximumBin();
                              pvdz = h_dz->GetXaxis()->GetBinCenter(imaxbin);

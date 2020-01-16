@@ -141,6 +141,9 @@ L1TPFProducer::L1TPFProducer(const edm::ParameterSet& iConfig):
     else if (vtxAlgo == "external") {
         vtxAlgo_ = l1tpf_impl::PUAlgoBase::ExternalVtxAlgo;
         extVtx_  = consumes<std::vector<l1t::Vertex>>(iConfig.getParameter<edm::InputTag>("vtxCollection"));
+    } else if (vtxAlgo == "externalCNN") {
+        vtxAlgo_ = l1tpf_impl::PUAlgoBase::ExternalCNNVtxAlgo;
+        extVtx_  = consumes<std::vector<l1t::Vertex>>(iConfig.getParameter<edm::InputTag>("vtxCollection"));
     } else throw cms::Exception("Configuration") << "Unsupported vtxAlgo " << vtxAlgo << "\n";
 
 
@@ -274,7 +277,9 @@ L1TPFProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     // Then do the vertexing, and save it out
     float z0;
-    if (vtxAlgo_ == l1tpf_impl::PUAlgoBase::ExternalVtxAlgo) {
+    l1t::Vertex pv;
+    if (vtxAlgo_ == l1tpf_impl::PUAlgoBase::ExternalVtxAlgo
+	|| vtxAlgo_ == l1tpf_impl::PUAlgoBase::ExternalCNNVtxAlgo) {
         edm::Handle<std::vector<l1t::Vertex>> vtxHandle;
         iEvent.getByToken(extVtx_, vtxHandle);
         z0 = 0;
@@ -282,10 +287,10 @@ L1TPFProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         for (const l1t::Vertex & vtx : *vtxHandle) {
             double myptsum = 0; 
             for (const auto & tkptr : vtx.tracks()) { myptsum += std::min(tkptr->getMomentum(4).perp(), 50.f); }
-            if (myptsum > ptsum) { z0 = vtx.z0(); ptsum = myptsum; }
+            if (myptsum > ptsum) { z0 = vtx.z0(); ptsum = myptsum; pv = vtx;}
         }
     }
-    l1pualgo_->doVertexing(l1regions_.regions(), vtxAlgo_, z0);
+    l1pualgo_->doVertexing(l1regions_.regions(), vtxAlgo_, z0, pv);
     iEvent.put(std::make_unique<float>(z0), "z0");
     if (fRegionDump) {
         fwrite(&z0, sizeof(float), 1, fRegionDump);

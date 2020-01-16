@@ -3,6 +3,7 @@
 
 #include "L1Trigger/Phase2L1ParticleFlow/interface/Region.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "DataFormats/L1TVertex/interface/Vertex.h"
 
 namespace l1tpf_impl { 
 
@@ -12,8 +13,8 @@ namespace l1tpf_impl {
         virtual ~PUAlgoBase() ;
 
         /// global operations
-        enum VertexAlgo { OldVtxAlgo, TPVtxAlgo, ExternalVtxAlgo };
-        virtual void doVertexing(std::vector<Region> &rs, VertexAlgo algo, float &vz) const ; // region is not const since it sets the fromPV bit of the tracks
+        enum VertexAlgo { OldVtxAlgo, TPVtxAlgo, ExternalVtxAlgo, ExternalCNNVtxAlgo };
+        virtual void doVertexing(std::vector<Region> &rs, VertexAlgo algo, float& pvdz, l1t::Vertex& pv) const ; // region is not const since it sets the fromPV bit of the tracks
 
         virtual void runChargedPV(Region &r, float z0) const ;
         

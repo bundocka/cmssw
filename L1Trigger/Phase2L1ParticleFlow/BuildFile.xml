@@ -6,6 +6,7 @@
 <use name="FastSimulation/Particle"/>
 <use name="DataFormats/ParticleFlowReco"/>
 
+<use name="DataFormats/L1TVertex"/>
 <use   name="L1Trigger/L1THGCal"/>
 <use   name="CommonTools/Utils"/>
 <use   name="CommonTools/MVAUtils"/>

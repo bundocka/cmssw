@@ -158,7 +158,7 @@ void l1tpf::corrector::correctPt(l1t::PFCluster & cluster, float preserveEmEt) c
     cluster.calibratePt(newpt, preserveEmEt);
 }
 
-void l1tpf::corrector::setGraph(const TGraph &graph, int ieta, int iemf) {
+void l1tpf::corrector::setGraph(const TGraph &graph, short int ieta, short int iemf) {
     char buff[32];
     if (is2d_) {
         snprintf(buff, 31, "eta_bin%d_emf_bin%d", ieta+1, iemf+1);
