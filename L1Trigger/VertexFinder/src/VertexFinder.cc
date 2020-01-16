@@ -466,7 +466,7 @@ void VertexFinder::TDRalgorithm()
 } // end of TDRalgorithm
 
 
-void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*> cnnPVTracks, tensorflow::Session* cnnSesh)
+void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnnPVTracks, tensorflow::Session* cnnSesh)
 {
 
   // define a tensor and fill it with track parameters

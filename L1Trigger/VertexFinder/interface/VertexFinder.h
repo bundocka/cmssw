@@ -95,7 +95,7 @@ public:
   /// Histogramming algorithmn as in the TDR
   void TDRalgorithm();
   /// Associate tracks to PV z0 provided using CNN
-  void cnnTrkAssociation(double z0, std::vector<const L1Track*> cnnPVTracks, tensorflow::Session* cnnSesh_);
+  void cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnnPVTracks, tensorflow::Session* cnnSesh_);
   /// Sort Vertices in z
   void SortVerticesInZ0() { std::sort(vertices_.begin(), vertices_.end(), SortVertexByZ0()); }
   /// Number of iterations
