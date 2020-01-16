@@ -33,7 +33,7 @@ VertexProducer = cms.EDProducer('VertexProducer',
         DBSCANMinDensityTracks = cms.uint32(2),
         VxMinTrackPt   = cms.double(2.5),
         # Associated tracks to vertex with CNN
-        DoCNNTrackAssociation = cms.bool(False),
+        DoCNNTrackAssociation = cms.bool(True),
         CNNGraph = cms.string("L1Trigger/VertexFinder/data/cnnTrkAssoc.pb")
     ),
   # Debug printout
