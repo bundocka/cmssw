@@ -2,6 +2,14 @@ from __future__ import print_function
 import os.path
 import FWCore.ParameterSet.Config as cms
 
+def L1TSettingsToCaloParams_2016_v3_3_1_2018_EcalSF_EGcalib(process):
+    process.load("L1Trigger.L1TCalorimeter.caloStage2Params_2016_v3_3_1_2018_EcalSF_EGcalib_cfi")
+    return process
+
+def L1TSettingsToCaloParams_2016_v3_3_1_2018_EcalSF(process):
+    process.load("L1Trigger.L1TCalorimeter.caloStage2Params_2016_v3_3_1_2018_EcalSF_cfi")
+    return process
+
 def L1TSettingsToCaloParams_2018_v1_4_1(process):
     process.load("L1Trigger.L1TCalorimeter.caloParams_2018_v1_4_1_cfi")
     return process
