@@ -470,7 +470,7 @@ void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnn
 {
 
   // define a tensor and fill it with track parameters
-  tensorflow::Tensor input(tensorflow::DT_FLOAT, { 250, 1, 10 });
+  tensorflow::Tensor input(tensorflow::DT_FLOAT, { 200, 1, 10 });
 
   // loop over tracks
   uint trackIt(0);
@@ -480,18 +480,20 @@ void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnn
     input.tensor<float, 3>()(trackIt, 0, 1) = float((track->pt() < 500 && track->pt() > 0) ? 1/track->pt() : 0);
     input.tensor<float, 3>()(trackIt, 0, 2) = float(abs(track->eta()));
     input.tensor<float, 3>()(trackIt, 0, 3) = float(track->chi2dof());
-    input.tensor<float, 3>()(trackIt, 0, 4) = float(abs(track->z0() - z0));
+    input.tensor<float, 3>()(trackIt, 0, 4) = float(track->bendchi2());
+    input.tensor<float, 3>()(trackIt, 0, 5) = float(track->getNumStubs());
+    input.tensor<float, 3>()(trackIt, 0, 6) = float(abs(track->z0() - z0));
     //pad empty parameters with zeroes
-    for(uint i=5; i<10; i++)
+    for(uint i=7; i<10; i++)
       input.tensor<float, 3>()(trackIt, 0, i) = float(0);
     trackIt++;
   }
 
   //pad empty tracks with zeros
-  if(trackIt<250){
-    for(uint i=trackIt; i<250; i++){
+  if(trackIt<200){
+    for(uint i=trackIt; i<200; i++){
       for(uint j=0; j<10; j++){
-	input.tensor<float, 3>()(i, 0, j) = float(0);
+	      input.tensor<float, 3>()(i, 0, j) = float(0);
       }
     }
   }

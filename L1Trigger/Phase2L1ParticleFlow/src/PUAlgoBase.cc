@@ -49,6 +49,7 @@ void PUAlgoBase::doVertexing(std::vector<Region> &rs, VertexAlgo algo, float& pv
 	  uint nCNNTrk=0;
 	  for (Region & r : rs) {
 	    for (PropagatedTrack & p : r.track) {
+	      p.fromPV = false;
 	      nPFTrk++;
 	      for (const auto & t : pv.tracks()) {
 		if(nPFTrk==1) nCNNTrk++;
