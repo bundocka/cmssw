@@ -468,16 +468,21 @@ void VertexFinder::TDRalgorithm()
 
 void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnnPVTracks, tensorflow::Session* cnnSesh)
 {
+  //sort(fitTracks_.begin(), fitTracks_.end(), SortTracksByPt());
 
   // define a tensor and fill it with track parameters
-  tensorflow::Tensor input(tensorflow::DT_FLOAT, { 200, 1, 10 });
+  tensorflow::Tensor input(tensorflow::DT_FLOAT, { 250, 1, 10 });
 
   // loop over tracks
   uint trackIt(0);
   for (const L1Track* track : fitTracks_) {
+    if(trackIt>=250) break;
+    if (track->pt() < 2 || track->pt() > 500 || abs(track->z0()) > 15 ||
+      track->chi2dof() > 100 || track->getNumStubs() < 4)
+      continue;
     // track input parameters are z0, 1/pt, eta, chi2, dz
     input.tensor<float, 3>()(trackIt, 0, 0) = float(track->z0());
-    input.tensor<float, 3>()(trackIt, 0, 1) = float((track->pt() < 500 && track->pt() > 0) ? 1/track->pt() : 0);
+    input.tensor<float, 3>()(trackIt, 0, 1) = float(1/track->pt());
     input.tensor<float, 3>()(trackIt, 0, 2) = float(abs(track->eta()));
     input.tensor<float, 3>()(trackIt, 0, 3) = float(track->chi2dof());
     input.tensor<float, 3>()(trackIt, 0, 4) = float(track->bendchi2());
@@ -490,8 +495,8 @@ void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnn
   }
 
   //pad empty tracks with zeros
-  if(trackIt<200){
-    for(uint i=trackIt; i<200; i++){
+  if(trackIt<250){
+    for(uint i=trackIt; i<250; i++){
       for(uint j=0; j<10; j++){
 	      input.tensor<float, 3>()(i, 0, j) = float(0);
       }

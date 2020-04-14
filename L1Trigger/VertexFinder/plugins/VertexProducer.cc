@@ -84,11 +84,11 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::vector<const L1Track*> l1TrackPtrs;
   l1TrackPtrs.reserve(l1Tracks.size());
   for (const auto& track : l1Tracks) {
-    if (track.pt() > settings_.vx_TrackMinPt()) {
-      if (track.pt() < 50 or track.getNumStubs() > 5)
-        l1TrackPtrs.push_back(&track);
-    }
+  //  if (track.pt() > settings_.vx_TrackMinPt()) {
+  //    if (track.pt() < 100 or track.getNumStubs() > 5)
+     l1TrackPtrs.push_back(&track);
   }
+  //}
 
   // FIXME: Check with Davide if the tracks should be filtered using the following cuts
   //   fittedTracks[i].second.accepted() and fittedTracks[i].second.chi2dof()< settings_->chi2OverNdfCut()
