@@ -84,8 +84,9 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::vector<const L1Track*> l1TrackPtrs;
   l1TrackPtrs.reserve(l1Tracks.size());
   for (const auto& track : l1Tracks) {
-  //  if (track.pt() > settings_.vx_TrackMinPt()) {
-  //    if (track.pt() < 100 or track.getNumStubs() > 5)
+  //if (track.pt() < 100 or track.getNumStubs() > 5)
+    if (track.pt() > 2 && track.pt() < 500 &&
+      abs(track.z0()) < 15 && track.chi2dof() < 100 && track.getNumStubs() > 4)
      l1TrackPtrs.push_back(&track);
   }
   //}

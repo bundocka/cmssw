@@ -468,8 +468,6 @@ void VertexFinder::TDRalgorithm()
 
 void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnnPVTracks, tensorflow::Session* cnnSesh)
 {
-  //sort(fitTracks_.begin(), fitTracks_.end(), SortTracksByPt());
-
   // define a tensor and fill it with track parameters
   tensorflow::Tensor input(tensorflow::DT_FLOAT, { 250, 1, 10 });
 
@@ -477,9 +475,6 @@ void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnn
   uint trackIt(0);
   for (const L1Track* track : fitTracks_) {
     if(trackIt>=250) break;
-    if (track->pt() < 2 || track->pt() > 500 || abs(track->z0()) > 15 ||
-      track->chi2dof() > 100 || track->getNumStubs() < 4)
-      continue;
     // track input parameters are z0, 1/pt, eta, chi2, dz
     input.tensor<float, 3>()(trackIt, 0, 0) = float(track->z0());
     input.tensor<float, 3>()(trackIt, 0, 1) = float(1/track->pt());
@@ -488,9 +483,9 @@ void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnn
     input.tensor<float, 3>()(trackIt, 0, 4) = float(track->bendchi2());
     input.tensor<float, 3>()(trackIt, 0, 5) = float(track->getNumStubs());
     input.tensor<float, 3>()(trackIt, 0, 6) = float(abs(track->z0() - z0));
-    //pad empty parameters with zeroes
-    for(uint i=7; i<10; i++)
-      input.tensor<float, 3>()(trackIt, 0, i) = float(0);
+    input.tensor<float, 3>()(trackIt, 0, 7) = float(0);
+    input.tensor<float, 3>()(trackIt, 0, 8) = float(0);
+    input.tensor<float, 3>()(trackIt, 0, 9) = float(0);
     trackIt++;
   }
 
@@ -512,7 +507,7 @@ void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnn
   // loop over tracks and keep tracks above
   //configurable probability to be from PV
   for (const L1Track* track : fitTracks_) {
-    if(outputs[0].tensor<float, 3>()(trackIt, 0, 0) > 0.8)
+    if(outputs[0].tensor<float, 3>()(trackIt, 0, 0) > 0.2)
       cnnPVTracks.push_back(track);
     trackIt++;
   }
