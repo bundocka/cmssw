@@ -11,6 +11,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
+#include "SimTracker/TrackTriggerAssociation/interface/TTTrackAssociationMap.h"
 
 #include "L1Trigger/VertexFinder/interface/AlgoSettings.h"
 
@@ -36,6 +37,8 @@ private:
 
 private:
   const edm::EDGetTokenT<TTTrackCollectionView> l1TracksToken_;
+  const edm::EDGetTokenT<TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > > ttTrackMCTruthToken_;
+
   tensorflow::GraphDef* cnnGraph_;
   tensorflow::Session* cnnSesh_;
 

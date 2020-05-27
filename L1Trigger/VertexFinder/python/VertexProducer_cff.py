@@ -3,12 +3,14 @@ import FWCore.ParameterSet.Config as cms
 VertexProducer = cms.EDProducer('VertexProducer',
 
   l1TracksInputTag = cms.InputTag("TTTracksFromTracklet", "Level1TTTracks"), 
+  mcTruthTrackInputTag = cms.InputTag("TTTrackAssociatorFromPixelDigis", "Level1TTTracks"),
   #l1TracksInputTag = cms.InputTag("TMTrackProducer", "TML1TracksSimpleLR"), # SFLR
+  tpInputTag = cms.InputTag("mix", "MergedTrackTruth"),
 
   # === Vertex Reconstruction configuration
   VertexReconstruction=cms.PSet(
         # Vertex Reconstruction Algorithm
-        Algorithm = cms.string("DBSCAN"),
+        Algorithm = cms.string("Generator"),
         # Vertex distance
         VertexDistance = cms.double(.15),
         # Assumed Vertex Resolution
@@ -32,8 +34,9 @@ VertexProducer = cms.EDProducer('VertexProducer',
         # DBSCAN min density tracks
         DBSCANMinDensityTracks = cms.uint32(2),
         VxMinTrackPt   = cms.double(2.5),
+        GenVxSmear = cms.double(0.001),
         # Associated tracks to vertex with CNN
-        DoCNNTrackAssociation = cms.bool(True),
+        DoCNNTrackAssociation = cms.bool(False),
         CNNGraph = cms.string("L1Trigger/VertexFinder/data/cnnTrkAssocTracklet_1m.pb")
     ),
   # Debug printout

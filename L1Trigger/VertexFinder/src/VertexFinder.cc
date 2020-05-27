@@ -438,6 +438,26 @@ void VertexFinder::AssociatePrimaryVertex(double trueZ0)
   }
 }
 
+void VertexFinder::Generator(std::vector<const L1Track*>& pvTracks)
+{
+  CLHEP::HepRandomEngine* engine;
+  RecoVertex genPV;
+  float sumz0 = 0.;
+  float smear = settings_->vx_smear();
+  cout << "L1T Vertexing: Smearing generator vertex with resolution of " << smear << endl;
+
+  for (const L1Track* track : pvTracks) {
+    sumz0 += track->z0();
+  }
+  float avrgz0 = sumz0/(pvTracks.size());
+  cout << "Gen z0 = " << avrgz0 << endl;
+  float smearedz0 = CLHEP::RandGaussQ::shoot(engine, avrgz0, smear);
+  cout << "Smeared z0 = " << smearedz0 << endl;
+  genPV.setZ(sumz0/(pvTracks.size()));
+  vertices_.push_back(genPV);
+
+}
+
 void VertexFinder::TDRalgorithm()
 {
   float vxPt = 0.;
@@ -457,6 +477,7 @@ void VertexFinder::TDRalgorithm()
     vertex.computeParameters(settings_->vx_weightedmean());
     // cout << "TDR pt "<< vertex.pT() << endl;
     vertex.setZ(z);
+    cout << "FH z0 = " << z << endl;
     if (vertex.pT() > vxPt) {
       tdr_vertex_ = vertex;
       tdr_pileup_tracks_ = tracks;

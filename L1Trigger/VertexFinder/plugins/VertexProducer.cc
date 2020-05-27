@@ -21,6 +21,7 @@ using namespace std;
 
 VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
   l1TracksToken_(consumes<TTTrackCollectionView>(iConfig.getParameter<edm::InputTag>("l1TracksInputTag"))),
+  ttTrackMCTruthToken_(consumes< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > >(iConfig.getParameter<edm::InputTag>("mcTruthTrackInputTag"))),
   settings_(AlgoSettings(iConfig))
 {
   // Get configuration parameters
@@ -46,6 +47,9 @@ VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
       break;
     case Algorithm::Kmeans:
       cout << "L1T vertex producer: Finding vertices using a kmeans algorithm" << endl;
+      break;
+    case Algorithm::Generator:
+      cout << "L1T vertex producer: Using **GENERATOR** vertex (average of the z0 of the TPs)" << endl;
       break;
   }
 
@@ -85,8 +89,9 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   l1TrackPtrs.reserve(l1Tracks.size());
   for (const auto& track : l1Tracks) {
   //if (track.pt() < 100 or track.getNumStubs() > 5)
-    if (track.pt() > 2 && track.pt() < 500 &&
+    if ((track.pt() > 2 && track.pt() < 500 &&
       abs(track.z0()) < 15 && track.chi2dof() < 100 && track.getNumStubs() > 4)
+      || settings_.vx_algo() == Algorithm::Generator)
      l1TrackPtrs.push_back(&track);
   }
   //}
@@ -116,6 +121,19 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       break;
     case Algorithm::Kmeans:
       vf.Kmeans();
+      break;
+    case Algorithm::Generator:
+      std::vector<const L1Track*> pvTracks;
+      for (const auto& track : l1Tracks) {
+        edm::Handle< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTTrackHandle;
+        iEvent.getByToken(ttTrackMCTruthToken_, MCTruthTTTrackHandle);
+        edm::Ptr< TrackingParticle > tpMatch = MCTruthTTTrackHandle->findTrackingParticlePtr(track.getTTTrackPtr());
+        if(tpMatch.isNull())
+          continue;
+        if(tpMatch->eventId().event() == 0)
+          pvTracks.push_back(&track);
+      }
+      vf.Generator(pvTracks);
       break;
   }
 
