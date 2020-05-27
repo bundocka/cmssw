@@ -18,7 +18,8 @@ enum class Algorithm {
   PVR,
   AdaptiveVertexReconstruction,
   HPV,
-  Kmeans
+  Kmeans,
+  Generator
 };
 
 
@@ -51,8 +52,9 @@ public:
   unsigned int vx_kmeans_iterations() const { return vx_kmeans_iterations_; }
   unsigned int vx_kmeans_nclusters() const { return vx_kmeans_nclusters_; }
   float vx_TrackMinPt() const { return vx_TrackMinPt_; }
-
-
+  bool vx_cnn_trk_assoc() const { return vx_cnn_trk_assoc_; }
+  std::string vx_cnn_graph() const { return vx_cnn_graph_; }
+  float vx_smear() const { return vx_smear_; }
 
   //=== Debug printout
   unsigned int debug() const { return debug_; }
@@ -82,10 +84,13 @@ private:
   float vx_chi2cut_;
   float tdr_vx_width_;
   float vx_TrackMinPt_;
+  float vx_smear_;
   float vx_dbscan_pt_;
   float vx_dbscan_mintracks_;
   unsigned int vx_kmeans_iterations_;
   unsigned int vx_kmeans_nclusters_;
+  bool vx_cnn_trk_assoc_;
+  std::string vx_cnn_graph_;
 
   // Debug printout
   unsigned int debug_;

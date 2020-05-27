@@ -13,11 +13,15 @@
 
 #include "L1Trigger/VertexFinder/interface/RecoVertexWithTP.h"
 
+#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
+
 using namespace l1tVertexFinder;
 using namespace std;
 
+
 VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
   l1TracksToken_(consumes<TTTrackCollectionView>(iConfig.getParameter<edm::InputTag>("l1TracksInputTag"))),
+  ttTrackMCTruthToken_(consumes< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > >(iConfig.getParameter<edm::InputTag>("mcTruthTrackInputTag"))),
   settings_(AlgoSettings(iConfig))
 {
   // Get configuration parameters
@@ -44,6 +48,9 @@ VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
     case Algorithm::Kmeans:
       cout << "L1T vertex producer: Finding vertices using a kmeans algorithm" << endl;
       break;
+    case Algorithm::Generator:
+      cout << "L1T vertex producer: Using **GENERATOR** vertex (average of the z0 of the TPs)" << endl;
+      break;
   }
 
   // Tame debug printout.
@@ -53,8 +60,15 @@ VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
   //--- Define EDM output to be written to file (if required)
   produces<l1t::VertexCollection>("l1vertices");
   produces<l1t::VertexCollection>("l1vertextdr");
-}
 
+  if(settings_.vx_cnn_trk_assoc()){
+    std::cout << "loading graph from " << settings_.vx_cnn_graph() << std::endl;
+    // load the graph
+    cnnGraph_ = tensorflow::loadGraphDef(settings_.vx_cnn_graph());
+    // create a new session and add the graphDef
+    cnnSesh_ = tensorflow::createSession(cnnGraph_);
+  }
+}
 
 void VertexProducer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup)
 {
@@ -74,11 +88,13 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::vector<const L1Track*> l1TrackPtrs;
   l1TrackPtrs.reserve(l1Tracks.size());
   for (const auto& track : l1Tracks) {
-    if (track.pt() > settings_.vx_TrackMinPt()) {
-      if (track.pt() < 50 or track.getNumStubs() > 5)
-        l1TrackPtrs.push_back(&track);
-    }
+  //if (track.pt() < 100 or track.getNumStubs() > 5)
+    if ((track.pt() > 2 && track.pt() < 500 &&
+      abs(track.z0()) < 15 && track.chi2dof() < 100 && track.getNumStubs() > 4)
+      || settings_.vx_algo() == Algorithm::Generator)
+     l1TrackPtrs.push_back(&track);
   }
+  //}
 
   // FIXME: Check with Davide if the tracks should be filtered using the following cuts
   //   fittedTracks[i].second.accepted() and fittedTracks[i].second.chi2dof()< settings_->chi2OverNdfCut()
@@ -106,6 +122,19 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     case Algorithm::Kmeans:
       vf.Kmeans();
       break;
+    case Algorithm::Generator:
+      std::vector<const L1Track*> pvTracks;
+      for (const auto& track : l1Tracks) {
+        edm::Handle< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTTrackHandle;
+        iEvent.getByToken(ttTrackMCTruthToken_, MCTruthTTTrackHandle);
+        edm::Ptr< TrackingParticle > tpMatch = MCTruthTTTrackHandle->findTrackingParticlePtr(track.getTTTrackPtr());
+        if(tpMatch.isNull())
+          continue;
+        if(tpMatch->eventId().event() == 0)
+          pvTracks.push_back(&track);
+      }
+      vf.Generator(pvTracks);
+      break;
   }
 
   vf.TDRalgorithm();
@@ -128,14 +157,32 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::unique_ptr<l1t::VertexCollection> lProductTDR(new std::vector<l1t::Vertex>());
   std::vector<edm::Ptr<l1t::Vertex::Track_t>> lVtxTracksTDR;
   lVtxTracksTDR.reserve(vf.TDRPrimaryVertex().tracks().size());
-  for (const auto& t : vf.TDRPrimaryVertex().tracks())
-    lVtxTracksTDR.emplace_back(t->getTTTrackPtr());
+  // use normal tracks or cnn tracks
+  if(settings_.vx_cnn_trk_assoc()){
+    std::vector<const L1Track*> cnnPVTracks;
+    vf.cnnTrkAssociation(vf.TDRPrimaryVertex().z0(), cnnPVTracks, cnnSesh_);
+    for (const auto& t : cnnPVTracks)
+      lVtxTracksTDR.emplace_back(t->getTTTrackPtr());
+  } else {
+    for (const auto& t : vf.TDRPrimaryVertex().tracks())
+      lVtxTracksTDR.emplace_back(t->getTTTrackPtr());
+  }
   lProductTDR->emplace_back(l1t::Vertex(vf.TDRPrimaryVertex().z0(), lVtxTracksTDR));
   iEvent.put(std::move(lProductTDR), "l1vertextdr");
 }
 
 void VertexProducer::endJob()
 {
+
+  if(settings_.vx_cnn_trk_assoc()){
+    // close the session
+    tensorflow::closeSession(cnnSesh_);
+    cnnSesh_ = nullptr;
+
+    // delete the graph
+    delete cnnGraph_;
+    cnnGraph_ = nullptr;
+  }
 }
 
 DEFINE_FWK_MODULE(VertexProducer);

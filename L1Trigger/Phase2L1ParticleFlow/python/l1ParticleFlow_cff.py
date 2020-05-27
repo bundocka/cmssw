@@ -73,8 +73,10 @@ l1pfProducerBarrel = l1pfProducer.clone(
     puppiUsingBareTracks = True,
     puppiDrMin = 0.07,
     puppiPtMax = 50.,
-    vtxAlgo = "external",
-    vtxCollection = cms.InputTag("VertexProducer","l1vertices"),
+    vtxAlgo = "externalCNN",
+    vtxCollection = cms.InputTag("VertexProducer","l1vertextdr"),
+#    vtxAlgo = "external",
+#    vtxCollection = cms.InputTag("VertexProducer","l1vertices"),
     # puppi tuning
     puAlgo = "LinearizedPuppi",
     puppiEtaCuts            = cms.vdouble( 1.6 ), # just one bin
@@ -126,8 +128,10 @@ l1pfProducerHGCal = l1pfProducer.clone(
     puppiDrMin = 0.04,
     puppiPtMax = 50.,
     puppiUsingBareTracks = True,
-    vtxAlgo = "external",
-    vtxCollection = cms.InputTag("VertexProducer","l1vertices"),
+    vtxAlgo = "externalCNN",
+    vtxCollection = cms.InputTag("VertexProducer","l1vertextdr"),
+#    vtxAlgo = "external",
+#    vtxCollection = cms.InputTag("VertexProducer","l1vertices"),
     # puppi tuning
     puAlgo = "LinearizedPuppi",
     puppiEtaCuts            = cms.vdouble( 2.0, 2.4, 3.1 ), # two bins in the tracker (different pT), one outside
@@ -197,8 +201,10 @@ l1pfProducerHF = l1pfProducer.clone(
     # not really useful, but for consistency
     puppiDrMin = 0.1,
     puppiPtMax = 100.,
-    vtxAlgo = "external",
-    vtxCollection = cms.InputTag("VertexProducer","l1vertices"),
+    vtxAlgo = "externalCNN",
+    vtxCollection = cms.InputTag("VertexProducer","l1vertextdr"),
+#    vtxAlgo = "external",
+#    vtxCollection = cms.InputTag("VertexProducer","l1vertices"),
     # puppi tuning
     puAlgo = "LinearizedPuppi",
     puppiEtaCuts            = cms.vdouble( 5.5 ), # one bin

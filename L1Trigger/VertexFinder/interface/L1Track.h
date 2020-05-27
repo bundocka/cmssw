@@ -24,9 +24,10 @@ public:
   float phi0() const { return track_->getMomentum().phi(); };
   float pt() const { return track_->getMomentum().transverse(); };
   float z0() const { return track_->getPOCA().z(); };
+  float bendchi2() const { return track_->getStubPtConsistency(); };
 
   // FIXME: Double check nPar=4 is correct
-  float chi2dof() const { return track_->getChi2Red(); };
+  float chi2dof() const { return track_->getChi2(); };
 
   unsigned int getNumStubs() const { return track_->getStubRefs().size(); }
 

@@ -33,7 +33,7 @@ namespace l1tpf {
             bool valid() const { return (index_.get() != nullptr); }
 
             // set the graph (note: it is cloned, and the corrector owns the clone)
-            void setGraph(const TGraph &graph, int ieta, int iemf=0) ; 
+            void setGraph(const TGraph &graph, short int ieta, short int iemf=0) ;
 
             bool is2d() const { return is2d_; }
             unsigned int neta() const { return neta_; }
