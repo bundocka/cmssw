@@ -11,12 +11,7 @@
 #include "L1Trigger/VertexFinder/interface/RecoVertex.h"
 
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
-#include "CLHEP/Random/RandGaussQ.h"
 
-
-namespace CLHEP {
-  class HepRandomEngine;
-}
 
 namespace l1tVertexFinder {
 
