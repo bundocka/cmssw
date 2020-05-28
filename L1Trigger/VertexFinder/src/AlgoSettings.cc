@@ -52,7 +52,7 @@ const std::map<std::string, Algorithm> AlgoSettings::algoNameMap = { { "GapClust
                                                                      { "PVR", Algorithm::PVR },
                                                                      { "Adaptive", Algorithm::AdaptiveVertexReconstruction },
                                                                      { "HPV", Algorithm::HPV },
-                                                                     { "K-means", Algorithm::Kmeans } };
-
+                                                                     { "K-means", Algorithm::Kmeans },
+                                                                     { "Generator", Algorithm::Generator} };
 
 } // end namespace l1tVertexFinder

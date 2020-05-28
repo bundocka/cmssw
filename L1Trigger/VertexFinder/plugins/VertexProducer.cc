@@ -49,7 +49,7 @@ VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
       cout << "L1T vertex producer: Finding vertices using a kmeans algorithm" << endl;
       break;
     case Algorithm::Generator:
-      cout << "L1T vertex producer: Using **GENERATOR** vertex (average of the z0 of the TPs)" << endl;
+      cout << "\n\n ** L1T vertex producer: Using ** GENERATOR ** vertex (average of TP z0s) ** \n\n" << endl;
       break;
   }
 
@@ -90,8 +90,7 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (const auto& track : l1Tracks) {
   //if (track.pt() < 100 or track.getNumStubs() > 5)
     if ((track.pt() > 2 && track.pt() < 500 &&
-      abs(track.z0()) < 15 && track.chi2dof() < 100 && track.getNumStubs() > 4)
-      || settings_.vx_algo() == Algorithm::Generator)
+      abs(track.z0()) < 15 && track.chi2dof() < 100 && track.getNumStubs() > 4))
      l1TrackPtrs.push_back(&track);
   }
   //}

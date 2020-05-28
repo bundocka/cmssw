@@ -34,7 +34,7 @@ VertexProducer = cms.EDProducer('VertexProducer',
         # DBSCAN min density tracks
         DBSCANMinDensityTracks = cms.uint32(2),
         VxMinTrackPt   = cms.double(2.5),
-        GenVxSmear = cms.double(0.001),
+        GenVxSmear = cms.double(0.5),
         # Associated tracks to vertex with CNN
         DoCNNTrackAssociation = cms.bool(False),
         CNNGraph = cms.string("L1Trigger/VertexFinder/data/cnnTrkAssocTracklet_1m.pb")
