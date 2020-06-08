@@ -448,9 +448,11 @@ void VertexFinder::Generator(std::vector<const L1Track*>& pvTracks)
 
   for (const L1Track* track : pvTracks) {
     sumz0 += track->z0();
+    genPV.insert(track);
   }
   float avrgz0 = sumz0/(pvTracks.size());
   float smearedz0 = (float)CLHEP::RandGauss::shoot(avrgz0, smear);
+  //std::cout << "Gen z0 = " << avrgz0 << ", smear = " << smearedz0 << std::endl;
   genPV.setZ(smearedz0);
   vertices_.push_back(genPV);
 
@@ -458,8 +460,7 @@ void VertexFinder::Generator(std::vector<const L1Track*>& pvTracks)
 
 void VertexFinder::TDRalgorithm()
 {
-  float vxPt = 0.;
-
+  float pvWeight = 0.;
   for (float z = -14.95; z < 15.; z += 0.1) {
     RecoVertex vertex;
     FitTrackCollection tracks;
@@ -475,12 +476,18 @@ void VertexFinder::TDRalgorithm()
     vertex.computeParameters(settings_->vx_weightedmean());
     // cout << "TDR pt "<< vertex.pT() << endl;
     vertex.setZ(z);
-    if (vertex.pT() > vxPt) {
+    float vxWeight = 0;
+    if(settings_->vx_use_cnn_trk_weights())
+        vxWeight = vertex.weight();
+    else
+        vxWeight = vertex.pT();
+    if (vxWeight > pvWeight) {
       tdr_vertex_ = vertex;
       tdr_pileup_tracks_ = tracks;
-      vxPt = vertex.pT();
+      pvWeight = vxWeight;
     }
   }
+  //cout << "TDR pv z0 = " << tdr_vertex_.z0() << endl;
 } // end of TDRalgorithm
 
 
@@ -495,7 +502,7 @@ void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnn
     if(trackIt>=250) break;
     // track input parameters are z0, 1/pt, eta, chi2, dz
     input.tensor<float, 3>()(trackIt, 0, 0) = float(track->z0());
-    input.tensor<float, 3>()(trackIt, 0, 1) = float(1/track->pt());
+    input.tensor<float, 3>()(trackIt, 0, 1) = float(track->pt());
     input.tensor<float, 3>()(trackIt, 0, 2) = float(abs(track->eta()));
     input.tensor<float, 3>()(trackIt, 0, 3) = float(track->chi2dof());
     input.tensor<float, 3>()(trackIt, 0, 4) = float(track->bendchi2());

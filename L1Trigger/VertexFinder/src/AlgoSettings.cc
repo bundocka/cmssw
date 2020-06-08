@@ -25,6 +25,8 @@ AlgoSettings::AlgoSettings(const edm::ParameterSet& iConfig) :
   vx_dbscan_mintracks_(vertex_.getParameter<unsigned int>("DBSCANMinDensityTracks")),
   vx_kmeans_iterations_(vertex_.getParameter<unsigned int>("KmeansIterations")),
   vx_kmeans_nclusters_(vertex_.getParameter<unsigned int>("KmeansNumClusters")),
+  vx_use_cnn_trk_weights_(vertex_.getParameter<bool>("UseCNNTrkWeights")),
+  vx_cnn_trkw_graph_(vertex_.getParameter<std::string>("CNNTrackWeightGraph")),
   vx_cnn_trk_assoc_(vertex_.getParameter<bool>("DoCNNTrackAssociation")),
   vx_cnn_graph_(vertex_.getParameter<std::string>("CNNGraph")),
   // Debug printout
