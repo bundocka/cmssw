@@ -25,6 +25,9 @@ public:
   float pt() const { return track_->getMomentum().transverse(); };
   float z0() const { return track_->getPOCA().z(); };
   float bendchi2() const { return track_->getStubPtConsistency(); };
+  float weight() const { return weight_; };
+  void setWeight(float w) { weight_ = w; };
+
 
   // FIXME: Double check nPar=4 is correct
   float chi2dof() const { return track_->getChi2(); };
@@ -35,6 +38,7 @@ public:
 
 private:
   edm::Ptr<TTTrack<Ref_Phase2TrackerDigi_>> track_;
+  float weight_;
 };
 
 } // end ns l1tVertexFinder

@@ -61,12 +61,20 @@ VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
   produces<l1t::VertexCollection>("l1vertices");
   produces<l1t::VertexCollection>("l1vertextdr");
 
-  if(settings_.vx_cnn_trk_assoc()){
-    std::cout << "loading graph from " << settings_.vx_cnn_graph() << std::endl;
+  if(settings_.vx_use_cnn_trk_weights()){
+    std::cout << "loading cnn trk weight graph from " << settings_.vx_cnn_trkw_graph() << std::endl;
     // load the graph
-    cnnGraph_ = tensorflow::loadGraphDef(settings_.vx_cnn_graph());
+    cnnTrkGraph_ = tensorflow::loadGraphDef(settings_.vx_cnn_trkw_graph());
     // create a new session and add the graphDef
-    cnnSesh_ = tensorflow::createSession(cnnGraph_);
+    cnnTrkSesh_ = tensorflow::createSession(cnnTrkGraph_);
+  }
+
+  if(settings_.vx_cnn_trk_assoc()){
+    std::cout << "loading cnn association graph from " << settings_.vx_cnn_graph() << std::endl;
+    // load the graph
+    cnnAssGraph_ = tensorflow::loadGraphDef(settings_.vx_cnn_graph());
+    // create a new session and add the graphDef
+    cnnAssSesh_ = tensorflow::createSession(cnnAssGraph_);
   }
 }
 
@@ -84,6 +92,30 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   for (const auto& track : l1TracksHandle->ptrs())
     l1Tracks.push_back(L1Track(track));
+
+  if(settings_.vx_use_cnn_trk_weights()){
+    tensorflow::Tensor input(tensorflow::DT_FLOAT, { 1, 10 });
+    for (auto& track : l1Tracks) {
+        // fill tensor with track params
+        input.tensor<float, 2>()(0, 0) = float(track.z0());
+        input.tensor<float, 2>()(0, 1) = float(track.pt());
+        input.tensor<float, 2>()(0, 2) = float(abs(track.eta()));
+        input.tensor<float, 2>()(0, 3) = float(track.chi2dof());
+        input.tensor<float, 2>()(0, 4) = float(track.bendchi2());
+        input.tensor<float, 2>()(0, 5) = float(track.getNumStubs());
+        input.tensor<float, 2>()(0, 6) = float(0);
+        input.tensor<float, 2>()(0, 7) = float(0);
+        input.tensor<float, 2>()(0, 8) = float(0);
+        input.tensor<float, 2>()(0, 9) = float(0);
+
+        // cnn output: track weight
+        std::vector<tensorflow::Tensor> output;
+        tensorflow::run(cnnTrkSesh_, { { "track_input", input } }, { "weights_output" }, &output);
+
+        // set track weight
+        track.setWeight(output[0].tensor<float, 2>()(0, 0));
+    }
+  }
 
   std::vector<const L1Track*> l1TrackPtrs;
   l1TrackPtrs.reserve(l1Tracks.size());
@@ -159,7 +191,7 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   // use normal tracks or cnn tracks
   if(settings_.vx_cnn_trk_assoc()){
     std::vector<const L1Track*> cnnPVTracks;
-    vf.cnnTrkAssociation(vf.TDRPrimaryVertex().z0(), cnnPVTracks, cnnSesh_);
+    vf.cnnTrkAssociation(vf.TDRPrimaryVertex().z0(), cnnPVTracks, cnnAssSesh_);
     for (const auto& t : cnnPVTracks)
       lVtxTracksTDR.emplace_back(t->getTTTrackPtr());
   } else {
@@ -175,13 +207,24 @@ void VertexProducer::endJob()
 
   if(settings_.vx_cnn_trk_assoc()){
     // close the session
-    tensorflow::closeSession(cnnSesh_);
-    cnnSesh_ = nullptr;
+    tensorflow::closeSession(cnnAssSesh_);
+    cnnAssSesh_ = nullptr;
 
     // delete the graph
-    delete cnnGraph_;
-    cnnGraph_ = nullptr;
+    delete cnnAssGraph_;
+    cnnAssGraph_ = nullptr;
   }
+
+  if(settings_.vx_use_cnn_trk_weights()){
+    // close the session
+    tensorflow::closeSession(cnnTrkSesh_);
+    cnnTrkSesh_ = nullptr;
+
+    // delete the graph
+    delete cnnTrkGraph_;
+    cnnTrkGraph_ = nullptr;
+  }
+
 }
 
 DEFINE_FWK_MODULE(VertexProducer);

@@ -39,8 +39,10 @@ private:
   const edm::EDGetTokenT<TTTrackCollectionView> l1TracksToken_;
   const edm::EDGetTokenT<TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > > ttTrackMCTruthToken_;
 
-  tensorflow::GraphDef* cnnGraph_;
-  tensorflow::Session* cnnSesh_;
+  tensorflow::GraphDef* cnnAssGraph_;
+  tensorflow::Session* cnnAssSesh_;
+  tensorflow::GraphDef* cnnTrkGraph_;
+  tensorflow::Session* cnnTrkSesh_;
 
   l1tVertexFinder::AlgoSettings settings_;
 };

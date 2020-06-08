@@ -21,6 +21,7 @@ public:
     z0_ = -999.;
     pT_ = -9999.;
     met_ = -999.;
+    weight_ = -999.;
   }
   ~RecoVertex() {}
 
@@ -43,6 +44,8 @@ public:
   void setZ(double z) { z0_ = z; }
   /// Sum ot fitted tracks transverse momentum
   double pT() const { return pT_; }
+ /// Sum of fitted tracks weights
+  double weight() const { return weight_; }
   /// Vertex z0 position
   double z0() const { return z0_; }
   /// Vertex z0 width
@@ -71,6 +74,7 @@ private:
   double z0_;
   double z0width_;
   double pT_;
+  double weight_;
   double met_;
   double metX_;
   double metY_;

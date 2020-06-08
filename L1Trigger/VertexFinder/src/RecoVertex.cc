@@ -9,6 +9,7 @@ void RecoVertex::computeParameters(bool weightedmean)
   met_ = 0.;
   metX_ = 0.;
   metY_ = 0.;
+  weight_ = 0.;
 
   float z0square = 0.;
 
@@ -22,6 +23,7 @@ void RecoVertex::computeParameters(bool weightedmean)
 
   for (const L1Track* track : tracks_) {
     pT_ += track->pt();
+    weight_ += track->weight();
     SumZ += track->z0();
     SumZ_pT += track->z0() * track->pt();
     z0square += track->z0() * track->z0();
