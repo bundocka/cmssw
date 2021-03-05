@@ -461,6 +461,7 @@ void VertexFinder::Generator(std::vector<const L1Track*>& pvTracks)
 void VertexFinder::TDRalgorithm()
 {
   float pvWeight = 0.;
+
   for (float z = -14.95; z < 15.; z += 0.1) {
     RecoVertex vertex;
     FitTrackCollection tracks;
@@ -487,8 +488,40 @@ void VertexFinder::TDRalgorithm()
       pvWeight = vxWeight;
     }
   }
+
   //cout << "TDR pv z0 = " << tdr_vertex_.z0() << endl;
 } // end of TDRalgorithm
+
+void VertexFinder::CNNPVZ0Algorithm(tensorflow::Session* cnnSesh)
+{
+  // define a tensor and fill it with track parameters
+  tensorflow::Tensor input(tensorflow::DT_FLOAT, { 1, 256, 1 });
+  std::vector<tensorflow::Tensor> outputs;
+
+  float pvWeight = 0.;
+  float pvZ = -999.;
+
+  for (float z = -15; z < 15.; z += (30./256.)) {
+    int zbin = (int) ((z+15.) * (256./30.));
+    float vxWeight = 0;
+    for (const L1Track* track : fitTracks_) {
+      if (track->z0() >= z && track->z0() < (z+(30./256.))) {
+        vxWeight += track->weight();
+      }
+    }
+    input.tensor<float, 3>()(0, zbin, 0) = vxWeight;
+
+    if (vxWeight > pvWeight) {
+      pvWeight = vxWeight;
+      pvZ = z;
+    }
+  }
+
+  tensorflow::run(cnnSesh, { { "hists_input", input } }, { "pv_position_output" }, &outputs);
+  tdr_vertex_.setZ(pvZ);
+
+  //cout << "TDR pv z0 = " << tdr_vertex_.z0() << " cnn z " << outputs[0].tensor<float, 2>()(0, 0) << endl;
+}
 
 
 void VertexFinder::cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnnPVTracks, tensorflow::Session* cnnSesh)

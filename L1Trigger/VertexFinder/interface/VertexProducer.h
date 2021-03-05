@@ -43,6 +43,8 @@ private:
   tensorflow::Session* cnnAssSesh_;
   tensorflow::GraphDef* cnnTrkGraph_;
   tensorflow::Session* cnnTrkSesh_;
+  tensorflow::GraphDef* cnnPVZ0Graph_;
+  tensorflow::Session* cnnPVZ0Sesh_;
 
   l1tVertexFinder::AlgoSettings settings_;
 };

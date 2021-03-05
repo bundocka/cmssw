@@ -95,6 +95,8 @@ public:
   void Generator(std::vector<const L1Track*>& pvTracks);
   /// Histogramming algorithmn as in the TDR
   void TDRalgorithm();
+  /// Histogramming algorithmn as in the TDR + cnn position
+  void CNNPVZ0Algorithm(tensorflow::Session* cnnSesh = 0);
   /// Associate tracks to PV z0 provided using CNN
   void cnnTrkAssociation(double z0, std::vector<const L1Track*>& cnnPVTracks, tensorflow::Session* cnnSesh_);
   /// Sort Vertices in z

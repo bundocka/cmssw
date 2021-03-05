@@ -69,6 +69,14 @@ VertexProducer::VertexProducer(const edm::ParameterSet& iConfig) :
     cnnTrkSesh_ = tensorflow::createSession(cnnTrkGraph_);
   }
 
+  if(settings_.vx_use_cnn_pvz0()){
+    std::cout << "loading cnn pv z0 graph from " << settings_.vx_cnn_pvz0_graph() << std::endl;
+    // load the graph
+    cnnPVZ0Graph_ = tensorflow::loadGraphDef(settings_.vx_cnn_pvz0_graph());
+    // create a new session and add the graphDef
+    cnnPVZ0Sesh_ = tensorflow::createSession(cnnPVZ0Graph_);
+  }
+
   if(settings_.vx_cnn_trk_assoc()){
     std::cout << "loading cnn association graph from " << settings_.vx_cnn_graph() << std::endl;
     // load the graph
@@ -93,7 +101,7 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (const auto& track : l1TracksHandle->ptrs())
     l1Tracks.push_back(L1Track(track));
 
-  if(settings_.vx_use_cnn_trk_weights()){
+  if(settings_.vx_use_cnn_trk_weights() || settings_.vx_use_cnn_pvz0()){
     tensorflow::Tensor input(tensorflow::DT_FLOAT, { 1, 10 });
     for (auto& track : l1Tracks) {
         // fill tensor with track params
@@ -168,7 +176,10 @@ void VertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       break;
   }
 
-  vf.TDRalgorithm();
+  if(settings_.vx_use_cnn_pvz0())
+    vf.CNNPVZ0Algorithm(cnnPVZ0Sesh_);
+  else
+    vf.TDRalgorithm();
   vf.SortVerticesInZ0();
   vf.FindPrimaryVertex();
 
@@ -224,6 +235,17 @@ void VertexProducer::endJob()
     delete cnnTrkGraph_;
     cnnTrkGraph_ = nullptr;
   }
+
+  if(settings_.vx_use_cnn_pvz0()){
+    // close the session
+    tensorflow::closeSession(cnnPVZ0Sesh_);
+    cnnPVZ0Sesh_ = nullptr;
+
+    // delete the graph
+    delete cnnPVZ0Graph_;
+    cnnPVZ0Graph_ = nullptr;
+  }
+
 
 }
 

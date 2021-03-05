@@ -27,7 +27,9 @@ AlgoSettings::AlgoSettings(const edm::ParameterSet& iConfig) :
   vx_kmeans_nclusters_(vertex_.getParameter<unsigned int>("KmeansNumClusters")),
   vx_use_cnn_trk_weights_(vertex_.getParameter<bool>("UseCNNTrkWeights")),
   vx_cnn_trkw_graph_(vertex_.getParameter<std::string>("CNNTrackWeightGraph")),
-  vx_cnn_trk_assoc_(vertex_.getParameter<bool>("DoCNNTrackAssociation")),
+  vx_use_cnn_pvz0_(vertex_.getParameter<bool>("UseCNNPVZ0")),
+  vx_cnn_pvz0_graph_(vertex_.getParameter<std::string>("CNNPVZ0Graph")),
+  vx_cnn_trk_assoc_(vertex_.getParameter<bool>("UseCNNTrackAssociation")),
   vx_cnn_graph_(vertex_.getParameter<std::string>("CNNGraph")),
   // Debug printout
   debug_(iConfig.getParameter<unsigned int>("Debug"))

@@ -54,6 +54,8 @@ public:
   float vx_TrackMinPt() const { return vx_TrackMinPt_; }
   bool vx_use_cnn_trk_weights() const { return vx_use_cnn_trk_weights_; }
   std::string vx_cnn_trkw_graph() const { return vx_cnn_trkw_graph_; }
+  bool vx_use_cnn_pvz0() const { return vx_use_cnn_pvz0_; }
+  std::string vx_cnn_pvz0_graph() const { return vx_cnn_pvz0_graph_; }
   bool vx_cnn_trk_assoc() const { return vx_cnn_trk_assoc_; }
   std::string vx_cnn_graph() const { return vx_cnn_graph_; }
   float vx_smear() const { return vx_smear_; }
@@ -93,6 +95,8 @@ private:
   unsigned int vx_kmeans_nclusters_;
   bool vx_use_cnn_trk_weights_;
   std::string vx_cnn_trkw_graph_;
+  bool vx_use_cnn_pvz0_;
+  std::string vx_cnn_pvz0_graph_;
   bool vx_cnn_trk_assoc_;
   std::string vx_cnn_graph_;
 
